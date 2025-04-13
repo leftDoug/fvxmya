@@ -1,0 +1,151 @@
+<div class="flex flex-wrap align-items-center justify-content-center">
+  <h3 class="col flex justify-content-start">Tipos de Reuniones</h3>
+
+  <p-table
+    #tToms
+    class="w-full"
+    [value]="typesOfMeetings"
+    [globalFilterFields]="['name']"
+    [rowHover]="true"
+    [scrollable]="true"
+    scrollHeight="81vh"
+  >
+    <!-- FIXME quitar el agragar y ponerlo en un toolbar -->
+    <ng-template pTemplate="caption">
+      <div class="flex justify-content-between">
+        <p-button
+          label="Agregar"
+          icon="pi pi-plus"
+          severity="success"
+          [text]="true"
+        />
+        <!-- (onClick)="showForm(null)" -->
+
+        <p-iconfield>
+          <p-inputicon styleClass="pi pi-search" />
+          <input
+            type="text"
+            pInputText
+            (input)="tToms.filterGlobal($any($event.target).value, 'contains')"
+            placeholder="Buscar..."
+          />
+        </p-iconfield>
+      </div>
+    </ng-template>
+
+    <ng-template pTemplate="header">
+      <tr>
+        <th pSortableColumn="name" style="width: 90%">
+          Tipo de Reunión <p-sortIcon field="name"></p-sortIcon>
+        </th>
+
+        <th style="width: 10%"></th>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="body" let-typeOfMeeting>
+      <tr>
+        <td>{{ typeOfMeeting.name }}</td>
+
+        <td class="flex align-items-center justify-content-center">
+          <!-- XXX los botones se separan con mr hasta ver la conf con gap -->
+          <p-button
+            class="mr-2"
+            label="Reuniones"
+            severity="contrast"
+            icon="pi pi-briefcase"
+            [text]="true"
+            [rounded]="true"
+            [routerLink]="['/tipos-de-reuniones/reuniones/', typeOfMeeting.id]"
+          />
+
+          <p-button
+            label="Agendas"
+            severity="contrast"
+            icon="pi pi-calendar-clock"
+            [text]="true"
+            [rounded]="true"
+          />
+          <!-- (onClick)="showAgendasDialog(typeOfMeeting.id)" -->
+
+          <p-divider layout="vertical" />
+
+          <p-button
+            class="mr-2"
+            icon="pi pi-pencil"
+            severity="success"
+            [text]="true"
+            [rounded]="true"
+          />
+          <!-- (onClick)="showForm(typeOfMeeting.id)" -->
+
+          <p-button
+            icon="pi pi-trash"
+            severity="danger"
+            [text]="true"
+            [rounded]="true"
+          />
+          <!-- (onClick)="remove($event, typeOfMeeting.id)" -->
+        </td>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="2" class="text-danger">
+          No se encontró ningún Tipo de Reunión.
+        </td>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="summary">
+      <div class="row mt-3">
+        <span class="col text-center"
+          >Tipos de Reunión:
+          {{ typesOfMeetings ? typesOfMeetings.length : 0 }}</span
+        >
+      </div>
+    </ng-template>
+  </p-table>
+
+  <!-- <p-confirmDialog /> -->
+
+  <!-- <app-type-of-meeting-form
+    *ngIf="tomDialog"
+    [organization]="organization"
+    [tom]="typeOfMeeting"
+    (onSubmit)="reloadTable($event)"
+    (onHide)="hideForm($event)"
+  /> -->
+
+  <!-- <app-agendas-table
+    *ngIf="agendasDialog"
+    [tom]="typeOfMeeting!"
+    (onHide)="hideDialog($event)"
+  /> -->
+
+  <!-- <p-dialog
+    [(visible)]="showXDialog"
+    [style]="{ width: '50rem' }"
+    styleClass="p-fluid"
+    [header]="organization.name"
+    [modal]="true"
+    (onHide)="hideXDialog()"
+    [maximizable]="true"
+    [focusOnShow]="false"
+  > -->
+  <!-- <span class="p-text-secondary text-lg font-bold block mb-3">
+      {{ typeOfMeeting ? typeOfMeeting.name : "" }}
+    </span> -->
+
+  <!-- <ng-template pTemplate="content">
+      <div class="" *ngIf="meetingsContent"> -->
+  <!-- <app-meetings-table /> -->
+  <!-- </div> -->
+
+  <!-- <div class="" *ngIf="createContent">
+        <app-agenda-form [idToM]="outputId" />
+      </div> -->
+  <!-- </ng-template> -->
+  <!-- </p-dialog> -->
+</div>
