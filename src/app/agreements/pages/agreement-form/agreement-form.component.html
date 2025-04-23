@@ -1,0 +1,117 @@
+<p-dialog
+  [(visible)]="visible"
+  [style]="{ width: '50rem' }"
+  [modal]="true"
+  [draggable]="false"
+  (onHide)="hide()"
+>
+  <!-- <pre>
+  {{ agreementForm.value | json }}
+</pre
+  > -->
+  <ng-template #header>
+    <div class="flex flex-row gap-2">
+      <div class="flex flex-column">
+        @if (agreement()) {
+        <h2 class="my-0">Editar Acuerdo No. {{ agreement()?.number }}</h2>
+        }@else {
+        <h2 class="my-0">Agregar Acuerdo</h2>
+        }
+      </div>
+    </div>
+  </ng-template>
+
+  <ng-template #content>
+    <form class="form" [formGroup]="agreementForm" autocomplete="off">
+      <div class="flex flex-column">
+        <!-- contenido -->
+        <label for="content" class="ml-1 mb-1">Contenido del acuerdo:</label>
+        <input
+          pInputText
+          id="content"
+          placeholder="Contenido del acuerdo..."
+          formControlName="content"
+          aria-describedby="content-help"
+        />
+        @if (submitted&&agreementContent.errors) {
+        <small id="content-help" class="text-red-500 mt-1 ml-1">{{
+          contentErrorMsg
+        }}</small>
+        }
+        <!-- fin contenido -->
+
+        <div class="grid">
+          <div class="col">
+            <div class="flex flex-column">
+              <!-- responsible -->
+              <label for="responsible" class="mt-3 mb-1 ml-1"
+                >Responsable:</label
+              >
+              <p-select
+                id="responsible"
+                [options]="workers"
+                optionLabel="name"
+                optionValue="id"
+                formControlName="responsible"
+                placeholder="-- Seleccione --"
+                appendTo="body"
+                aria-describedby="responsible-help"
+              />
+              @if (submitted&&responsible.errors) {
+              <small id="responsible-help" class="text-red-500 mt-1 ml-1">{{
+                responsibleErrorMsg
+              }}</small>
+              }
+            </div>
+            <!-- fin responsible -->
+          </div>
+
+          <div class="col">
+            <div class="flex flex-column">
+              <!-- fecha de cumplimiento -->
+              <label for="complianceDate" class="mt-3 mb-1 ml-1"
+                >Fecha de cumplimiento:
+              </label>
+              <p-datepicker
+                styleClass="w-full"
+                [iconDisplay]="'input'"
+                [showIcon]="true"
+                inputId="complianceDate"
+                dateFormat="dd/mm/yy"
+                appendTo="body"
+                formControlName="compilanceDate"
+                [readonlyInput]="true"
+                aria-describedby="compilanceDate-help"
+              />
+              <!-- [touchUI]="true" -->
+              @if (submitted&&compilanceDate.errors) {
+              <small id="compilanceDate-help" class="text-red-500 mt-1 ml-1">{{
+                compilanceDateErrorMsg
+              }}</small>
+              }
+              <!-- fin fecha de cumplimiento -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+  </ng-template>
+
+  <ng-template #footer>
+    <div class="flex pt-4 justify-content-end gap-2">
+      <p-button
+        label="Cancelar"
+        icon="pi pi-times"
+        [text]="true"
+        (onClick)="hide()"
+      />
+
+      <p-button
+        label="Guardar"
+        icon="pi pi-check"
+        [text]="true"
+        (onClick)="save()"
+      />
+    </div>
+  </ng-template>
+</p-dialog>

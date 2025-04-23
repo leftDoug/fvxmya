@@ -1,0 +1,135 @@
+@if (infoVisible) {
+<p-dialog
+  [(visible)]="visible"
+  [style]="{ width: '50rem' }"
+  [modal]="true"
+  [draggable]="false"
+  (onHide)="hide()"
+>
+  <ng-template #header>
+    <div class="flex flex-row gap-2">
+      <div class="flex flex-column">
+        <h2 class="my-0">Acuerdo No. {{ agreement().number }}</h2>
+      </div>
+
+      <div class="flex flex-column align-self-center">
+        <p-tag
+          [value]="getStatusLocal(agreement()) | uppercase"
+          [severity]="getSeverityLocal(agreement())"
+        />
+      </div>
+    </div>
+  </ng-template>
+  <!-- <app-loading /> -->
+
+  <ng-template #content>
+    <div class="flex flex-column justify-content-center w-full">
+      <p-divider align="left" type="solid">
+        <strong>Contenido</strong>
+      </p-divider>
+      <span class="ml-5">{{ agreement().content }}</span>
+
+      <div class="grid">
+        <div class="col">
+          <p-divider align="left" type="solid">
+            <strong>Reunión</strong>
+          </p-divider>
+          <span class="ml-5">
+            {{ agreement().meeting?.name }}
+          </span>
+        </div>
+
+        <div class="col">
+          <p-divider align="left" type="solid">
+            <strong>Fecha de cumplimiento</strong>
+          </p-divider>
+          <span class="ml-5">
+            {{ agreement().compilanceDate | date : "dd/MM/yyyy" }}
+          </span>
+        </div>
+      </div>
+
+      <p-divider align="left" type="solid">
+        <strong>Responsable</strong>
+      </p-divider>
+      <span class="ml-5">
+        {{ agreement().responsible?.name }}
+      </span>
+
+      <p-divider align="left" type="solid">
+        <strong>Respuestas</strong>
+      </p-divider>
+
+      <ul class="mt-0">
+        @for (response of agreement().responses; track response.id) {
+        <li [style]="{ 'white-space': 'pre-line' }">
+          {{ response.content }}
+        </li>
+        }
+      </ul>
+    </div>
+  </ng-template>
+
+  <ng-template #footer>
+    <div class="flex gap-5 justify-content-center">
+      <p-button
+        icon="pi pi-arrow-left"
+        label="Atrás"
+        type="button"
+        [text]="true"
+        (onClick)="hide()"
+      />
+
+      @if (!agreement().completed && agreement().state) {
+      <p-button
+        icon="pi pi-pencil"
+        label="Editar"
+        type="button"
+        *ngIf=""
+        [text]="true"
+      />
+      <!-- (onClick)="showForm()" -->
+
+      <p-button
+        icon="pi pi-file-edit"
+        label="Dar respuesta"
+        type="button"
+        [text]="true"
+        (onClick)="showResponseDialog()"
+      />
+      } @if(!agreement().completed && agreement().state &&
+      agreement().responses!.length > 0){
+      <p-button
+        icon="pi pi-check"
+        label="Marcar como cumplido"
+        type="button"
+        severity="success"
+        [text]="true"
+        (onClick)="setCompleted()"
+      />
+      } @if (!agreement().completed && agreement().state) {
+      <p-button
+        icon="pi pi-ban"
+        label="Anular"
+        severity="danger"
+        type="button"
+        (onClick)="cancel()"
+        [text]="true"
+      />
+      }
+    </div>
+  </ng-template>
+
+  <!-- <p-confirmDialog /> -->
+</p-dialog>
+}@else if(responseDialogVisible){
+<app-response-form [agreement]="agreement()" (onHide)="hideResponseDialog()" />
+}
+
+<!-- <app-agreement-form
+  *ngIf="formDialog"
+  [agreement]="agreement"
+  [meeting]="agreement.meeting!"
+  (onSubmit)="reloadInfo($event)"
+  (onHide)="hideForm($event)"
+/> -->

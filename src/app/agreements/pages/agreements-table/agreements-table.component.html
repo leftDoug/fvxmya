@@ -1,0 +1,240 @@
+<!-- <div class="flex flex-wrap align-items-center justify-content-center"> -->
+<!-- <div class="w-full"> -->
+<!-- <p-card
+  class="w-full min-w-700"
+  [header]="
+    meeting ? (meeting.organization ? meeting.organization.name : '') : ''
+  "
+  [subheader]="
+    meeting ? (meeting.typeOfMeeting ? meeting.typeOfMeeting.name : '') : ''
+  "
+> -->
+<!-- <ng-template pTemplate="content" class="pt-0"> -->
+<!-- <h3 class="flex my-0">
+      {{ meeting ? meeting.name : "" }}
+    </h3> -->
+
+<div class="">
+  <p-toolbar>
+    <ng-template #start>
+      <p-button
+        label="Agregar"
+        severity="success"
+        icon="pi pi-plus"
+        [text]="true"
+        (onClick)="showFormDialog()"
+      />
+    </ng-template>
+
+    <ng-template #end>
+      <p-button
+        [text]="true"
+        label="Atrás"
+        icon="pi pi-arrow-left"
+        (onClick)="goBack()"
+      />
+    </ng-template>
+  </p-toolbar>
+</div>
+
+<div class="flex flex-column">
+  <p-table
+    #tAgreements
+    [value]="agreements()"
+    [globalFilterFields]="['content', 'responsible', 'meeting', 'status']"
+    [tableStyle]="{ 'min-width': '60rem' }"
+    dataKey="id"
+  >
+    <ng-template #caption>
+      <div class="flex justify-content-between">
+        <div class="flex flex-column align-self-center">
+          <span class="text-lg font-bold">Acuerdos</span>
+        </div>
+
+        <p-iconField iconPosition="left">
+          <p-inputIcon styleClass="pi pi-search" />
+          <input
+            pInputText
+            placeholder="Buscar..."
+            (input)="
+              tAgreements.filterGlobal($any($event.target).value, 'contains')
+            "
+          />
+        </p-iconField>
+      </div>
+    </ng-template>
+    <ng-template pTemplate="header">
+      <tr>
+        <th pSortableColumn="number" style="width: 5%">
+          <div class="flex align-items-center">
+            No. <p-sortIcon field="number"></p-sortIcon>
+          </div>
+        </th>
+        <th pSortableColumn="content" style="width: 50%">
+          <div class="flex align-items-center">
+            Contenido <p-sortIcon field="content"></p-sortIcon>
+          </div>
+        </th>
+        <th pSortableColumn="responsible.name" style="width: 20%">
+          <div class="flex align-items-center">
+            Responsable
+            <p-sortIcon field="responsible.name"></p-sortIcon>
+          </div>
+        </th>
+        <th pSortableColumn="meeting.name" style="width: 15%">
+          <div class="flex align-items-center">
+            Reunión <p-sortIcon field="meeting.name"></p-sortIcon>
+          </div>
+        </th>
+        <th pSortableColumn="status" style="width: 5%">
+          <div>Estado <p-sortIcon field="status"></p-sortIcon></div>
+        </th>
+        <th style="width: 5%"></th>
+      </tr>
+      <tr>
+        <th></th>
+        <th></th>
+        <th></th>
+        <th>
+          <!-- <p-columnFilter
+                    field="meeting"
+                    matchMode="equals"
+                    [showMenu]="false"
+                  >
+                    <ng-template
+                      pTemplate="filter"
+                      let-value
+                      let-filter="filterCallback"
+                    >
+                      <p-dropdown
+                        [ngModel]="value"
+                        [options]="meetings"
+                        optionLabel="name"
+                        optionValue="name"
+                        (onChange)="filter($event.value)"
+                        placeholder="Todas"
+                      >
+                      </p-dropdown>
+                    </ng-template>
+                  </p-columnFilter> -->
+        </th>
+        <!-- <th>
+              <p-columnFilter
+                field="status"
+                matchMode="equals"
+                [showMenu]="false"
+              >
+                <ng-template
+                  pTemplate="filter"
+                  let-value
+                  let-filter="filterCallback"
+                >
+                  <p-dropdown
+                    [ngModel]="value"
+                    [options]="statuses"
+                    (onChange)="filter($event.value)"
+                    placeholder="Todos"
+                  >
+                    <ng-template let-option pTemplate="item">
+                      <p-tag
+                        [severity]="getSeverityX(option.value)"
+                        [value]="option.label"
+                      />
+                    </ng-template>
+                  </p-dropdown>
+                </ng-template>
+              </p-columnFilter>
+            </th> -->
+        <th>
+          <p-columnFilter field="status" matchMode="equals" [showMenu]="false">
+            <ng-template
+              pTemplate="filter"
+              let-value
+              let-filter="filterCallback"
+            >
+              <!-- [ngModel]="value" -->
+              <p-select
+                [options]="statuses"
+                (onChange)="filter($event.value)"
+                placeholder="Seleccione"
+                appendTo="body"
+              >
+                <ng-template let-option #item>
+                  <p-tag [value]="option" [severity]="getSeverity(option)" />
+                </ng-template>
+              </p-select>
+            </ng-template>
+          </p-columnFilter>
+        </th>
+        <th></th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-agreement>
+      <!-- row-cfg [status]="agreement.status" -->
+      <tr>
+        <td>
+          <strong>{{ agreement.number }}</strong>
+        </td>
+        <td>
+          {{ agreement.content }}
+        </td>
+        <td>
+          {{ agreement.responsible.name }}
+        </td>
+        <td>
+          {{ agreement.meeting.name }}
+        </td>
+        <td>
+          <!-- FIXME arreglar el status en el .ts -->
+          <p-tag
+            [severity]="getSeverityFromAgreement(agreement)"
+            [value]="getStatus(agreement)"
+          />
+        </td>
+        <td>
+          <p-button
+            icon="pi pi-info-circle"
+            severity="info"
+            [text]="true"
+            [rounded]="true"
+            (onClick)="showInfoDialog(agreement)"
+          />
+          <!-- [routerLink]="['/acuerdos/detalles/', agreement.id]" -->
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template #emptymessage>
+      <tr>
+        <td colspan="5">No se encontró ningún acuerdo</td>
+      </tr>
+    </ng-template>
+    <ng-template #summary>
+      <div class="flex justify-content-evenly pt-3">
+        <span class="font-bold">Acuerdos: {{ agreements().length }}</span>
+        <span class="font-bold">Cumplidos: {{ fulfilled() }}</span>
+        <span class="font-bold">Inumplidos: {{ unfulfilled() }}</span>
+        <span class="font-bold">Anulados: {{ cancelled() }}</span>
+        <span class="font-bold">En proceso: {{ inProcess() }}</span>
+      </div>
+    </ng-template>
+  </p-table>
+</div>
+<!-- </ng-template> -->
+<!-- </p-card> -->
+<!-- </div> -->
+<!-- </div> -->
+
+@if (infoDialogVisible) {
+<app-agreement-info
+  [agreement]="selectedAgreement!"
+  (onHide)="hideInfoDialog()"
+/>
+} @if (formDialogVisible) {
+<app-agreement-form
+  [meeting]="meeting()"
+  [agreement]="selectedAgreement"
+  (onHide)="hideForm()"
+/>
+}
+
+<!-- <pre>{{ agreements | json }}</pre> -->

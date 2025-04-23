@@ -1,0 +1,15 @@
+.completed {
+  background-color: rgba(0, 255, 76, 0.39) !important;
+}
+
+.in-process {
+  background-color: rgba(255, 242, 0, 0.39) !important;
+}
+
+.incomplete {
+  background-color: rgba(255, 0, 0, 0.185) !important;
+}
+
+.removed {
+  background-color: rgba(0, 0, 0, 0.295) !important;
+}

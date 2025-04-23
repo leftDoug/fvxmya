@@ -1,0 +1,52 @@
+<p-dialog
+  [(visible)]="visible"
+  [style]="{ width: '40rem' }"
+  [header]="
+    typeOfMeeting()?.id
+      ? 'Actualizar Tipo de Reunión: '
+      : 'Agregar Tipo de Reunión'
+  "
+  [modal]="true"
+  [draggable]="false"
+  (onHide)="hideDialog()"
+>
+  <ng-template #content>
+    <form [formGroup]="tomForm" class="form">
+      <div class="flex flex-column">
+        <label for="name" class="ml-1 mb-1">Nombre:</label>
+        <input
+          pInputText
+          id="name"
+          placeholder="Tipo de Reunión..."
+          formControlName="name"
+          aria-describedby="name-help"
+        />
+        <small
+          id="name-help"
+          class="text-red-500 mt-1 ml-1"
+          *ngIf="submitted && name.errors"
+        >
+          {{ nameErrorMsg }}
+        </small>
+      </div>
+    </form>
+  </ng-template>
+
+  <ng-template pTemplate="footer">
+    <div class="flex pt-4 justify-content-evenly">
+      <p-button
+        label="Cancelar"
+        [text]="true"
+        icon="pi pi-times"
+        (onClick)="hideDialog()"
+      />
+
+      <p-button
+        label="Guardar"
+        icon="pi pi-check"
+        [text]="true"
+        (onClick)="save()"
+      />
+    </div>
+  </ng-template>
+</p-dialog>

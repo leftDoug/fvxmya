@@ -1,0 +1,7 @@
+<p-drawer
+  [visible]="visible()"
+  (visibleChange)="changeVisible($event)"
+  header="FVX M&A"
+>
+  <p-panelmenu [model]="items()" styleClass="w-full md:w-80" />
+</p-drawer>

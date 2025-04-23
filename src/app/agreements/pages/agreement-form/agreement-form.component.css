@@ -1,0 +1,7 @@
+.date {
+  width: 75%;
+}
+
+.p-dropdown.invalid {
+  border: 1px solid #e24c4c !important;
+}

@@ -1,0 +1,14 @@
+<p>prueba works!</p>
+
+<p-pickList
+  [source]="sourceWorkers"
+  [target]="selectedWorkers"
+  [sourceHeader]="'Trabajadores disponibles'"
+  targetHeader="Trabajadores seleccionados"
+>
+  <ng-template let-worker pTemplate="item">
+    <div class="">
+      <span class="font-bold">{{ worker }}</span>
+    </div>
+  </ng-template>
+</p-pickList>

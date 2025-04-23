@@ -1,0 +1,66 @@
+<p-dialog
+  [(visible)]="visible"
+  [style]="{ width: '50rem' }"
+  [modal]="true"
+  [draggable]="false"
+  (onHide)="hide()"
+  (onShow)="disableMainPageScroll()"
+>
+  <ng-template #header>
+    <div class="flex flex-row gap-2">
+      <div class="flex flex-column">
+        <h2 class="my-0">Acuerdo No. {{ agreement().number }}</h2>
+      </div>
+
+      <div class="flex flex-column align-self-center">
+        <p-tag
+          [value]="getStatusLocal(agreement()) | uppercase"
+          [severity]="getSeverityLocal(agreement())"
+        />
+      </div>
+    </div>
+  </ng-template>
+
+  <ng-template #content class="">
+    <div class="flex flex-column">
+      <form class="form" [formGroup]="responseForm" autocomplete="off">
+        <div class="flex flex-column">
+          <label for="content" class="ml-1 mb-1">Respuesta:</label>
+          <textarea
+            class=""
+            pTextarea
+            id="content"
+            formControlName="content"
+            placeholder="Respuesta..."
+            aria-describedby="content-help"
+            [autoResize]="true"
+          ></textarea>
+          @if (submitted && responseContent.errors) {
+          <small id="content-help" class="text-red-500 mt-1 ml-1">
+            {{ contentErrorMsg }}
+          </small>
+
+          }
+        </div>
+      </form>
+    </div>
+  </ng-template>
+
+  <ng-template #footer>
+    <div class="flex pt-4 justify-content-evenly">
+      <p-button
+        label="Cancelar"
+        icon="pi pi-times"
+        [text]="true"
+        (onClick)="hide()"
+      />
+
+      <p-button
+        label="Guardar"
+        icon="pi pi-check"
+        [text]="true"
+        (onClick)="save()"
+      />
+    </div>
+  </ng-template>
+</p-dialog>

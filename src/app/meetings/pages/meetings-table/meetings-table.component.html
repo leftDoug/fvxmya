@@ -1,0 +1,179 @@
+<!-- <div class="flex flex-wrap align-items-center justify-content-center w-full"> -->
+<!-- <h3 class="col flex justify-content-start">Reuniones</h3> -->
+
+<div class="my-3">
+  <p-toolbar>
+    <ng-template #start>
+      <p-button
+        [text]="true"
+        severity="success"
+        label="Agregar"
+        icon="pi pi-plus"
+        (onClick)="showFormDialog()"
+      />
+    </ng-template>
+
+    <ng-template #end>
+      <p-button
+        [text]="true"
+        label="Atrás"
+        icon="pi pi-arrow-left"
+        (onClick)="goBack()"
+      />
+    </ng-template>
+  </p-toolbar>
+</div>
+
+<p-table
+  #tMeetings
+  class="w-full"
+  [value]="meetings()"
+  [globalFilterFields]="['name', 'session', 'date']"
+  [tableStyle]="{ 'min-width': '75rem' }"
+>
+  <ng-template pTemplate="caption">
+    <div class="flex justify-content-between">
+      <div class="flex flex-column align-self-center">
+        <!-- <span class="">Reuniones</span> -->
+      </div>
+
+      <p-iconField iconPosition="left">
+        <p-inputIcon styleClass="pi pi-search" />
+        <input
+          pInputText
+          placeholder="Buscar..."
+          (input)="
+            tMeetings.filterGlobal($any($event.target).value, 'contains')
+          "
+        />
+      </p-iconField>
+    </div>
+  </ng-template>
+
+  <ng-template pTemplate="header">
+    <tr>
+      <th pSortableColumn="name" style="width: 60%">
+        <div class="">Reunión<p-sortIcon field="name" /></div>
+      </th>
+
+      <th pSortableColumn="session" style="width: 20%">
+        <div class="">Sesión <p-sortIcon field="session" /></div>
+      </th>
+
+      <th pSortableColumn="date" style="width: 10%">
+        <div class="flex align-items-center justify-content-center">
+          Fecha <p-sortIcon field="date" />
+        </div>
+      </th>
+
+      <th style="width: 10%"></th>
+    </tr>
+
+    <tr>
+      <th></th>
+
+      <th>
+        <p-columnFilter field="session" matchMode="equals" [showMenu]="false">
+          <ng-template pTemplate="filter" let-value let-filter="filterCallback">
+            <p-select
+              appendTo="body"
+              [ngModel]="value"
+              [options]="sessions"
+              (onChange)="filter($event.value)"
+              placeholder="Todas"
+            />
+          </ng-template>
+        </p-columnFilter>
+      </th>
+
+      <th>
+        <div class="flex justify-content-evenly align-items-center">
+          <p-columnFilter type="date" field="meetingDate" display="menu" />
+        </div>
+      </th>
+
+      <th></th>
+    </tr>
+  </ng-template>
+
+  <ng-template pTemplate="body" let-meeting>
+    <tr>
+      <td>
+        <div class="">
+          {{ meeting.name }}
+        </div>
+      </td>
+
+      <td>
+        <div class="">
+          {{ meeting.session }}
+        </div>
+      </td>
+
+      <td>
+        <div class="flex align-items-center justify-content-center">
+          {{ meeting.date | date : "dd/MM/yyyy" }}
+        </div>
+      </td>
+
+      <td>
+        <div class="flex align-items-center justify-content-center">
+          <p-button
+            class="mr-2"
+            severity="info"
+            icon="pi pi-info-circle"
+            [text]="true"
+            [rounded]="true"
+            (onClick)="goToInfo(meeting.id)"
+          />
+
+          <p-button
+            icon="pi pi-trash"
+            [rounded]="true"
+            severity="danger"
+            [text]="true"
+          />
+        </div>
+      </td>
+    </tr>
+  </ng-template>
+
+  <ng-template pTemplate="emptymessage">
+    <tr>
+      <td colspan="4">No se encontró ninguna Reunión</td>
+    </tr>
+  </ng-template>
+
+  <ng-template pTemplate="summary">
+    <div class="row pt-3">
+      <span class="font-bold">Reuniones: {{ meetings().length }}</span>
+    </div>
+  </ng-template>
+</p-table>
+<!-- </div> -->
+
+@if(formDialogVisible){
+<app-meeting-form
+  [organization]="organization"
+  [typeOfMeeting]="typeOfMeeting()"
+  [meeting]="selectedMeeting"
+  (onHide)="hideFormDialog()"
+/>
+}
+
+<!-- <p-dialog
+  [(visible)]="formVisible"
+  [style]="{ width: '50rem' }"
+  header="Crear Reunión"
+  [modal]="true"
+  styleClass="p-fluid"
+  [draggable]="false"
+  (onHide)="hideDialog()"
+>
+  <app-meeting-form
+    *ngIf="formVisible"
+    [organization]="organization"
+    [typeOfMeeting]="typeOfMeeting"
+    (onSave)="reloadTable($event)"
+  />
+</p-dialog> -->

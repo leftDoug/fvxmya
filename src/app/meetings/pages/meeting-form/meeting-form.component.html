@@ -1,0 +1,426 @@
+<p-dialog
+  [(visible)]="visible"
+  [style]="{ width: '50rem' }"
+  [header]="!meeting()?.id ? 'Crear Reunión' : 'Actualizar Reunión'"
+  [modal]="true"
+  [draggable]="false"
+  (onHide)="hideDialog()"
+>
+  <ng-template #content>
+    <pre>{{ loadingTopics }}</pre>
+    <p-stepper [linear]="true" [value]="1">
+      <p-step-list>
+        <p-step [value]="1">Datos de la Reunión</p-step>
+        <p-step [value]="2">Puntos del Día</p-step>
+        <p-step [value]="3">Miembros Convocados</p-step>
+        <p-step [value]="4">Invitados</p-step>
+      </p-step-list>
+      <p-step-panels>
+        <p-step-panel [value]="1">
+          <ng-template #content let-activateCallback="activateCallback">
+            <form class="form" [formGroup]="meetingForm" autocomplete="off">
+              <div class="flex flex-column">
+                <!-- name -->
+                <div class="flex flex-row align-items-center">
+                  <div class="flex flex-column col px-0">
+                    <div class="flex flex-row align-items-center">
+                      <div class="flex flex-column col-2 py-0">
+                        <label
+                          for="name"
+                          class="ml-1 mb-1 flex justify-content-end"
+                          >Reunión:</label
+                        >
+                      </div>
+                      <div class="flex flex-column col py-0">
+                        <input
+                          pInputText
+                          id="name"
+                          placeholder="Reunión..."
+                          formControlName="name"
+                          aria-describedby="name-help"
+                        />
+                      </div>
+                    </div>
+                    <div class="flex flex-row align-items-center">
+                      <div class="flex flex-column col-2 py-0"></div>
+
+                      <div class="flex flex-column col py-0">
+                        <small
+                          id="name-help"
+                          class="text-red-500 mt-1 ml-1"
+                          *ngIf="dataSubmitted && name.errors"
+                        >
+                          {{ nameErrorMsg }}
+                        </small>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <!-- end name -->
+
+                <!-- secretary -->
+                <div class="flex flex-row align-items-center">
+                  <div class="flex flex-column col px-0">
+                    <div class="flex flex-row align-items-center">
+                      <div class="flex flex-column col-2 py-0">
+                        <label
+                          for="secretary"
+                          class="mt-3 mb-1 ml-1 flex justify-content-end"
+                          >Secretario:</label
+                        >
+                      </div>
+                      <div class="flex flex-column col py-0">
+                        <p-select
+                          inputId="secretary"
+                          placeholder="-- Seleccione --"
+                          [options]="organization().members"
+                          optionLabel="name"
+                          optionValue="id"
+                          appendTo="body"
+                          formControlName="idSecretary"
+                          aria-describedby="secretary-help"
+                        />
+                      </div>
+                    </div>
+                    <div class="flex flex-row align-items-center">
+                      <div class="flex flex-column col-2 py-0"></div>
+
+                      <div class="flex flex-column col py-0">
+                        <small
+                          id="secretary-help"
+                          class="text-red-500 mt-1 ml-1"
+                          *ngIf="dataSubmitted && secretary.errors"
+                        >
+                          {{ secretaryErrorMsg }}
+                        </small>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <!-- end secretary -->
+
+                <!-- date and session -->
+                <div class="flex flex-row align-items-center">
+                  <!-- date -->
+                  <div class="flex flex-column col px-0">
+                    <div class="flex flex-row align-items-center p-0">
+                      <div class="flex flex-column col-4 py-0">
+                        <label
+                          for="date"
+                          class="mt-3 mb-1 ml-1 flex justify-content-end"
+                          >Fecha:</label
+                        >
+                      </div>
+                      <div class="flex flex-column col py-0">
+                        <!-- <p-iconfield>
+                          <p-inputicon styleClass="pi pi-search" />
+                        </p-iconfield> -->
+                        <p-date-picker
+                          inputId="date"
+                          dateFormat="dd/mm/yy"
+                          [iconDisplay]="'input'"
+                          [showIcon]="true"
+                          [readonlyInput]="true"
+                          formControlName="date"
+                          appendTo="body"
+                          aria-describedby="date-help"
+                        />
+                      </div>
+                    </div>
+                    <div class="flex flex-row align-items-center p-0">
+                      <div class="flex flex-column col-4 py-0"></div>
+
+                      <div class="flex flex-column col mt-0 py-0">
+                        <small
+                          id="date-help"
+                          class="text-red-500 mt-1 ml-1"
+                          *ngIf="dataSubmitted && date.errors"
+                        >
+                          {{ dateErrorMsg }}
+                        </small>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- end date -->
+
+                  <!-- session -->
+                  <div class="flex flex-column col px-0">
+                    <div class="flex flex-row align-items-center p-0">
+                      <div class="flex flex-column col-4 py-0">
+                        <label
+                          for="session"
+                          class="mt-3 mb-1 ml-1 flex justify-content-end"
+                          >Sesión:</label
+                        >
+                      </div>
+                      <div class="flex flex-column col py-0">
+                        <p-select
+                          inputId="session"
+                          placeholder="-- Seleccione --"
+                          [options]="sessions"
+                          appendTo="body"
+                          formControlName="session"
+                          aria-describedby="session-help"
+                        />
+                      </div>
+                    </div>
+                    <div class="flex flex-row align-items-center p-0">
+                      <div class="flex flex-column col-4 py-0"></div>
+
+                      <div class="flex flex-column col mt-0 py-0">
+                        <small
+                          id="session-help"
+                          class="text-red-500 mt-1 ml-1"
+                          *ngIf="dataSubmitted && session.errors"
+                        >
+                          {{ sessionErrorMsg }}
+                        </small>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- end session -->
+                </div>
+                <!-- end date and session -->
+
+                <!-- times -->
+                <div class="flex flex-row align-items-center">
+                  <!-- start time -->
+                  <div class="flex flex-column col px-0">
+                    <div class="flex flex-row align-items-center p-0">
+                      <div class="flex flex-column col-4 py-0">
+                        <label
+                          for="startTime"
+                          class="mt-3 mb-1 ml-1 flex justify-content-end"
+                          >Inicio:
+                        </label>
+                      </div>
+                      <div class="flex flex-column col py-0">
+                        <p-iconfield>
+                          <p-date-picker
+                            inputId="startTime"
+                            [iconDisplay]="'input'"
+                            [showIcon]="true"
+                            [timeOnly]="true"
+                            [readonlyInput]="true"
+                            formControlName="startTime"
+                            appendTo="body"
+                            aria-describedby="startTime-help"
+                          />
+                          <p-inputicon
+                            styleClass="pi pi-clock pointer-events-none pointer-events-none"
+                          />
+                        </p-iconfield>
+                      </div>
+                    </div>
+                    <div class="flex flex-row align-items-center p-0">
+                      <div class="flex flex-column col-4 py-0"></div>
+
+                      <div class="flex flex-column col mt-0 py-0">
+                        <small
+                          id="startTime-help"
+                          class="text-red-500 mt-1 ml-1"
+                          *ngIf="dataSubmitted && startTime.errors"
+                        >
+                          {{ startTimeErrorMsg }}
+                        </small>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- end start time -->
+
+                  <!-- end time -->
+                  <div class="flex flex-column col px-0">
+                    <div class="flex flex-row align-items-center p-0">
+                      <div class="flex flex-column col-4 py-0">
+                        <label
+                          for="endTime"
+                          class="mt-3 mb-1 ml-1 flex justify-content-end"
+                          >Fin:
+                        </label>
+                      </div>
+                      <div class="flex flex-column col py-0">
+                        <p-iconfield>
+                          <p-date-picker
+                            inputId="endTime"
+                            formControlName="endTime"
+                            appendTo="body"
+                            [iconDisplay]="'input'"
+                            [showIcon]="true"
+                            [timeOnly]="true"
+                            [readonlyInput]="true"
+                            aria-describedby="endTime-help"
+                          />
+                          <p-inputicon
+                            styleClass="pi pi-clock pointer-events-none pointer-events-none"
+                          />
+                        </p-iconfield>
+                      </div>
+                    </div>
+
+                    <div class="flex flex-row align-items-center p-0">
+                      <div class="flex flex-column col-4 py-0"></div>
+
+                      <div class="flex flex-column col mt-0 py-0">
+                        <small
+                          id="endTime-help"
+                          class="text-red-500 mt-1 ml-1"
+                          *ngIf="dataSubmitted && endTime.errors"
+                        >
+                          {{ endTimeErrorMsg }}
+                        </small>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- end end time -->
+                </div>
+                <!-- end times -->
+              </div>
+            </form>
+
+            <div class="flex pt-4 justify-content-end">
+              <p-button
+                label="Siguiente"
+                icon="pi pi-arrow-right"
+                iconPos="right"
+                [text]="true"
+                (onClick)="submitData()"
+                (onClick)="meetingForm.valid && activateCallback(2)"
+              />
+              <!-- (onClick)="meetingForm.valid && setTopics()" -->
+            </div>
+          </ng-template>
+        </p-step-panel>
+
+        <p-step-panel [value]="2">
+          <ng-template #content let-activateCallback="activateCallback">
+            @if (!loadingTopics) {
+            <div class="flex flex-row">
+              <div class="col">
+                <span class="text-lg font-bold ml-2">Todos los Temas</span>
+              </div>
+              <div class="col">
+                <span class="text-lg font-bold ml-6">Temas a tratar</span>
+              </div>
+            </div>
+            <div class="flex flex-column">
+              <p-picklist
+                sourceHeader="Todos"
+                targetHeader="Seleccionados"
+                [source]="sourceTopics()"
+                [target]="targetTopics"
+                [sourceStyle]="{ height: '30rem' }"
+                [targetStyle]="{ height: '30rem' }"
+                [responsive]="true"
+                [showSourceControls]="false"
+                [showTargetControls]="false"
+                [sourceStyle]="{ height: '10rem' }"
+              >
+                <ng-template let-topic pTemplate="item">
+                  <div class="">
+                    <span class="font-bold">{{ topic.name }}</span>
+                  </div>
+                </ng-template>
+              </p-picklist>
+            </div>
+
+            <div class="flex pt-4 justify-content-between">
+              <p-button
+                label="Anterior"
+                icon="pi pi-arrow-left"
+                [text]="true"
+                (onClick)="activateCallback(1)"
+              />
+
+              <p-button
+                label="Siguiente"
+                icon="pi pi-arrow-right"
+                iconPos="right"
+                [text]="true"
+                (onClick)="checkTopics() && activateCallback(3)"
+              />
+            </div>
+            }@else {
+            <app-loading />
+            }
+          </ng-template>
+        </p-step-panel>
+
+        <p-step-panel [value]="3">
+          <ng-template #content let-activateCallback="activateCallback">
+            <div class="flex flex-column">
+              <p-pickList
+                sourceHeader="Miembros disponibles"
+                targetHeader="Miembros convocados"
+                [source]="availableMembers"
+                [target]="members"
+                [responsive]="true"
+                [showSourceControls]="false"
+                [showTargetControls]="false"
+                [sourceStyle]="{ height: '10rem' }"
+              >
+                <ng-template let-worker pTemplate="item">
+                  <div class="">
+                    <span class="font-bold">{{ worker.name }}</span>
+                  </div>
+                </ng-template>
+              </p-pickList>
+            </div>
+
+            <div class="flex pt-4 justify-content-between">
+              <p-button
+                label="Anterior"
+                icon="pi pi-arrow-left"
+                [text]="true"
+                (onClick)="activateCallback(2)"
+              />
+
+              <p-button
+                label="Siguiente"
+                icon="pi pi-arrow-right"
+                iconPos="right"
+                [text]="true"
+                (onClick)="setAvailableGuests()"
+                (onClick)="checkParticipants() && activateCallback(4)"
+              />
+            </div>
+          </ng-template>
+        </p-step-panel>
+
+        <p-step-panel [value]="4">
+          <ng-template #content let-activateCallback="activateCallback">
+            <div class="flex flex-column">
+              <p-pickList
+                sourceHeader="Trabajadores disponibles"
+                targetHeader="Trabajadores invitados"
+                [source]="availableWorkers()"
+                [target]="guests"
+                [responsive]="true"
+                [showSourceControls]="false"
+                [showTargetControls]="false"
+                [sourceStyle]="{ height: '10rem' }"
+              >
+                <ng-template let-worker pTemplate="item">
+                  <div class="">
+                    <span class="font-bold">{{ worker.name }}</span>
+                  </div>
+                </ng-template>
+              </p-pickList>
+            </div>
+
+            <div class="flex pt-4 justify-content-between">
+              <p-button
+                label="Anterior"
+                icon="pi pi-arrow-left"
+                [text]="true"
+                (onClick)="activateCallback(3)"
+              />
+
+              <p-button label="Guardar" icon="pi pi-check" [text]="true" />
+              <!-- (onClick)="save()" -->
+            </div>
+          </ng-template>
+        </p-step-panel>
+      </p-step-panels>
+    </p-stepper>
+  </ng-template>
+</p-dialog>
