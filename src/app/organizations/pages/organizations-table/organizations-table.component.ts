@@ -45,24 +45,22 @@ import { OrganizationFormComponent } from '../organization-form/organization-for
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class OrganizationsTableComponent {
-  private readonly _organizationsService = inject(OrganizationsService);
+  private readonly organizationsService = inject(OrganizationsService);
+
   loading: boolean = true;
   // FIXME: setear esto para k se carguen solo a las k puede acceder el usuario y usar el loading para la tabla
   organizations = computed(() => {
-    return this._organizationsService.getAllFormatted();
+    return this.organizationsService.getAllFormatted();
   });
-  confirmDialogVisible: boolean = false;
   formDialogVisible: boolean = false;
   selectedOrg: Organization | null = null;
-
-  table = viewChild.required('tOrganization');
-  tableIsSorted: boolean | null = null;
+  confirmDialogVisible: boolean = false;
   removeEntityName: string | null = null;
   removeEntityId: number | null = null;
   removeEntityEvent: Event | null = null;
 
   constructor() {
-    this._organizationsService.getAllSignal();
+    this.organizationsService.getAllSignal();
   }
 
   showRemoveConfirmation(event: Event, id: number, name: string) {
@@ -74,7 +72,7 @@ export class OrganizationsTableComponent {
 
   remove(ok: boolean) {
     if (ok) {
-      this._organizationsService.remove(this.removeEntityId!);
+      this.organizationsService.remove(this.removeEntityId!);
     }
 
     this.removeEntityId = null;

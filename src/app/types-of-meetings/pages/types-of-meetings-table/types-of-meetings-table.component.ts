@@ -1,4 +1,4 @@
-import { Component, inject, input, Input, OnInit } from '@angular/core';
+import { Component, computed, inject, input, OnInit } from '@angular/core';
 import { TypeOfMeeting } from '../../interfaces/type-of-meeting.interface';
 import { TypesOfMeetingsService } from '../../services/types-of-meetings.service';
 import { ConfirmationService, MessageService, SelectItem } from 'primeng/api';
@@ -9,38 +9,55 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Organization } from 'src/app/organizations/interfaces/organization.interface';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
-import { RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { DividerModule } from 'primeng/divider';
 import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
 import { InputTextModule } from 'primeng/inputtext';
+import { TypeOfMeetingFormComponent } from '../type-of-meeting-form/type-of-meeting-form.component';
+import { ConfirmRemoveComponent } from '@app/shared/confirm-remove/confirm-remove.component';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
 
 @Component({
-  selector: 'app-types-of-meetings-table',
+  selector: 'app-typesOfMeetings-table',
   imports: [
     TableModule,
     ButtonModule,
-    RouterLink,
     DividerModule,
     IconFieldModule,
     InputIconModule,
     InputTextModule,
+    TypeOfMeetingFormComponent,
+    ConfirmRemoveComponent,
+    ConfirmDialogModule,
   ],
   templateUrl: './types-of-meetings-table.component.html',
   styleUrls: ['./types-of-meetings-table.component.css'],
-  providers: [ConfirmationService, MessageService],
+  providers: [ConfirmationService, MessageService, TypeOfMeetingFormComponent],
 })
 export class TypesOfMeetingsTableComponent implements OnInit {
-  private readonly _tomsService = inject(TypesOfMeetingsService);
-  typesOfMeetings: TypeOfMeeting[] = [];
+  private readonly tomsService = inject(TypesOfMeetingsService);
+  private readonly router = inject(Router);
 
-  tomDialog: boolean = false;
-  agendasDialog: boolean = false;
-  showXDialog: boolean = false;
+  organization = input.required<Organization>();
+  // FIXME: arrglar k nunca se van a pedir todos los toms, sino getAllFrom
+  typesOfMeetings = computed(() => {
+    return this.tomsService
+      .getAllFormated()
+      .filter((tom) => tom.idOrganization === this.organization().id);
+  });
 
-  meetingsContent: boolean = false;
+  formDialogVisible: boolean = false;
 
-  dialogHeader: string = '';
+  selectedTom: TypeOfMeeting | null = null;
+
+  confirmDialogVisible: boolean = false;
+  tableIsSorted: boolean | null = null;
+  removeEntityName: string | null = null;
+  removeEntityId: number | null = null;
+  removeEntityEvent: Event | null = null;
+
+  loading: boolean = true;
 
   // submitted: boolean = false;
   // agendaSubmitted: boolean = false;
@@ -57,34 +74,19 @@ export class TypesOfMeetingsTableComponent implements OnInit {
   // });
 
   // outputId: string = '';
-  typeOfMeeting?: TypeOfMeeting;
 
   // @Input() organization!: Organization;
-  organization = input.required<Organization>();
 
   // sortOptions!: SelectItem[];
   // sortOrder!: number;
   // sortField!: string;
   // sortKey: string | undefined;
 
-  constructor(
-    private fb: FormBuilder,
-    private organizationsService: OrganizationsService,
-    // private tomsServices: TypesOfMeetingsService,
-    private confirmationService: ConfirmationService,
-    private messageService: MessageService // private agendasService: AgendasService
-  ) {
-    // this.tomsServices.getAll();
+  constructor() {
+    this.tomsService.getAll();
   }
 
   ngOnInit(): void {
-    console.log('ORGANIZATION:', this.organization);
-    this._tomsService.getAllFrom(this.organization().id).subscribe((resp) => {
-      if (resp) {
-        console.log(resp);
-        this.typesOfMeetings = resp;
-      }
-    });
     // this.organizationsService
     //   .getToMs(this.organization.id)
     //   .subscribe(
@@ -94,6 +96,39 @@ export class TypesOfMeetingsTableComponent implements OnInit {
     //   { label: 'Año Descendente', value: '!year' },
     //   { label: 'Año Ascendente', value: 'year' },
     // ];
+  }
+
+  goToMeetings(id: number) {
+    this.router.navigateByUrl(`organizaciones/tipo-de-reunion/reuniones/${id}`);
+  }
+
+  showRemoveConfirmation(event: Event, id: number, name: string) {
+    this.removeEntityEvent = event;
+    this.removeEntityName = name;
+    this.removeEntityId = id;
+    this.confirmDialogVisible = true;
+  }
+
+  remove(ok: boolean) {
+    if (ok) {
+      this.tomsService.remove(this.removeEntityId!);
+    }
+
+    this.removeEntityId = null;
+    this.removeEntityName = null;
+    this.confirmDialogVisible = false;
+  }
+
+  showFormDialog(typeOfMeeting?: TypeOfMeeting) {
+    if (typeOfMeeting) {
+      this.selectedTom = typeOfMeeting;
+    }
+    this.formDialogVisible = true;
+  }
+
+  hideFormDialog() {
+    this.formDialogVisible = false;
+    this.selectedTom = null;
   }
 
   // showMeetings(tom: TypeOfMeeting) {
@@ -270,4 +305,8 @@ export class TypesOfMeetingsTableComponent implements OnInit {
   //     });
   //   });
   // }
+
+  goToAgendas(id: number) {
+    this.router.navigateByUrl(`agendas/${id}`);
+  }
 }

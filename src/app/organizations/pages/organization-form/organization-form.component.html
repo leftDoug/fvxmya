@@ -1,107 +1,3 @@
-<!-- <div class="flex align-items-center justify-content-center">
-  <p-card
-    class="p-5 w-full"
-    [header]="
-      newOrganization.id
-        ? 'Actualizar organización ' + newOrganization.name
-        : 'Crear organización'
-    "
-  >
-    <p-toast></p-toast>
-    <form
-      class="form"
-      action="POST"
-      (ngSubmit)="create()"
-      [formGroup]="organizationForm"
-      autocomplete="off"
-    >
-      <div class="grid">
-        <label
-          for="name"
-          class="col-2 flex align-items-center justify-content-end"
-          >Organización:
-        </label>
-
-        <input
-          class="col ml-2 mr-3"
-          type="text"
-          pInputText
-          id="name"
-          formControlName="name"
-          placeholder="Nombre de la organización..."
-        />
-      </div>
-
-      <div class="grid">
-        <div class="col-2"></div>
-
-        <small
-          id="organization-help"
-          class="p-error col ml-2"
-          *ngIf="validate()"
-          >{{ organizationErrorMsg }}</small
-        >
-      </div>
-
-      <div class="grid">
-        <label
-          for="leader"
-          class="col-2 flex align-items-center justify-content-end"
-          >Líder:
-        </label>
-
-        <p-dropdown
-          class="col"
-          inputId="leader"
-          formControlName="idLeader"
-          [options]="workers"
-          optionLabel="name"
-          (onHide)="touchDropdown()"
-          optionValue="id"
-          placeholder="-- Seleccione --"
-        />
-      </div>
-
-      <div class="grid">
-        <small class="p-error" *ngIf="idLeader.errors && dropdownTouched">
-          El líder es requerido.
-        </small>
-      </div>
-
-      <div class="gap-6 mt-5 flex align-items-center justify-content-center">
-        <p-button
-          label="Crear"
-          icon="pi pi-check"
-          severity="success"
-          class=""
-          type="submit"
-          *ngIf="!newOrganization.id; else update"
-          [disabled]="organizationForm.invalid"
-        ></p-button>
-
-        <ng-template #update>
-          <p-button
-            label="Actualizar"
-            icon="pi pi-check"
-            severity="success"
-            class="col-2 mx-2"
-            type="submit"
-            [disabled]="organizationForm.invalid || organizationForm.pristine"
-          ></p-button>
-        </ng-template>
-
-        <p-button
-          label="Cancelar"
-          icon="pi pi-times"
-          class=""
-          type="button"
-          [routerLink]="'/organizaciones'"
-        ></p-button>
-      </div>
-    </form>
-  </p-card>
-</div> -->
-
 <p-dialog
   [(visible)]="visible"
   [style]="{ width: '50rem' }"
@@ -109,6 +5,7 @@
     !organization()?.id ? 'Crear Organización' : 'Actualizar Organización'
   "
   [modal]="true"
+  [draggable]="false"
   (onHide)="hideDialog()"
 >
   <ng-template pTemplate="content">
@@ -122,41 +19,40 @@
           <ng-template #content let-activateCallback="activateCallback">
             <form [formGroup]="organizationForm" class="form">
               <div class="flex flex-column">
-                <!-- <div class=""> -->
-                <label for="name" class="mb-1 ml-1">Nombre:</label>
+                <label for="name" class="ml-1 mb-1">Nombre:</label>
                 <input
-                  type="text"
                   pInputText
                   id="name"
+                  placeholder="Nombre"
                   formControlName="name"
-                  autofocus
+                  aria-describedby="name-help"
                 />
                 <small
+                  id="name-help"
                   class="text-red-500 mt-1 ml-1"
                   *ngIf="submitted && name.errors"
                 >
                   {{ nameErrorMsg }}
                 </small>
-                <!-- </div> -->
 
-                <!-- <div class=""> -->
                 <label for="leader" class="mt-3 mb-1 ml-1">Líder:</label>
                 <p-select
-                  formControlName="idLeader"
                   inputId="leader"
+                  placeholder="--Seleccione--"
                   [options]="workers()"
                   optionLabel="name"
                   optionValue="id"
-                  placeholder="--Seleccione--"
                   appendTo="body"
+                  formControlName="idLeader"
+                  aria-describedby="leader-help"
                 />
                 <small
+                  id="leader-help"
                   class="text-red-500 mt-1 ml-1"
                   *ngIf="submitted && leader.errors"
                 >
                   {{ leaderErrorMsg }}
                 </small>
-                <!-- </div> -->
               </div>
             </form>
 
@@ -175,9 +71,6 @@
 
         <p-step-panel [value]="2">
           <ng-template #content let-activateCallback="activateCallback">
-            <!-- <p-message key="banner" /> -->
-            <!-- <p-toast /> -->
-
             <div class="flex flex-column">
               <p-pickList
                 [source]="workersSource"

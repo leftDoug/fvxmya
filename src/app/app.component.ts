@@ -1,12 +1,25 @@
-import { Component, effect, inject } from '@angular/core';
+import { Component, effect, inject, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { MessageService } from 'primeng/api';
-import { NotificatorService } from './services/notificator.service';
+import { MenuItem, MessageService } from 'primeng/api';
+import { ButtonModule } from 'primeng/button';
+import { CardModule } from 'primeng/card';
+import { InputIconModule } from 'primeng/inputicon';
+import { MenubarModule } from 'primeng/menubar';
 import { ToastModule } from 'primeng/toast';
+import { NotificatorService } from './services/notificator.service';
+import { SidemenuComponent } from './sidemenu/sidemenu.component';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, ToastModule],
+  imports: [
+    RouterOutlet,
+    ToastModule,
+    SidemenuComponent,
+    ButtonModule,
+    CardModule,
+    MenubarModule,
+    InputIconModule,
+  ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css',
 })
@@ -16,7 +29,14 @@ export class AppComponent {
     inject(NotificatorService);
   private readonly messageService: MessageService = inject(MessageService);
 
-  // panelVisible = signal<boolean>(false);
+  panelVisible = signal<boolean>(false);
+
+  items: MenuItem[] = [
+    {
+      icon: 'pi pi-bars',
+      command: () => this.panelVisible.set(true),
+    },
+  ];
 
   constructor() {
     effect(() => {

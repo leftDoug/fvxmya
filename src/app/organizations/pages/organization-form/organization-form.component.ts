@@ -2,7 +2,6 @@ import {
   Component,
   computed,
   inject,
-  input,
   model,
   OnInit,
   output,
@@ -14,28 +13,30 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
+import { NgIf } from '@angular/common';
+import { ActivatedRoute } from '@angular/router';
+
+import { ButtonModule } from 'primeng/button';
+import { DialogModule } from 'primeng/dialog';
+import { InputTextModule } from 'primeng/inputtext';
+import { PickListModule } from 'primeng/picklist';
+import { SelectModule } from 'primeng/select';
+import { StepperModule } from 'primeng/stepper';
+import { ToastModule } from 'primeng/toast';
+
 import { Organization } from '../../interfaces/organization.interface';
 import { OrganizationsService } from '../../services/organizations.service';
 import { AuthService } from 'src/app/auth/services/auth.service';
-import { DialogModule } from 'primeng/dialog';
-import { StepperModule } from 'primeng/stepper';
-import { NgIf } from '@angular/common';
-import { ButtonModule } from 'primeng/button';
-import { PickListModule } from 'primeng/picklist';
-import { InputTextModule } from 'primeng/inputtext';
 import { User } from '@app/auth/interfaces/user.interface';
-import { SelectModule } from 'primeng/select';
 import { NotificatorService } from '@app/services/notificator.service';
-import { ToastModule } from 'primeng/toast';
-import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-organization-form',
   imports: [
-    DialogModule,
     StepperModule,
     ReactiveFormsModule,
     NgIf,
+    DialogModule,
     ButtonModule,
     PickListModule,
     InputTextModule,
@@ -65,7 +66,6 @@ export class OrganizationFormComponent implements OnInit {
   workersSource: User[] = [];
   workersSelected: User[] = [];
   newOrganization: Organization;
-  // dropdownTouched: boolean = false;
 
   constructor() {
     this.organizationForm = this.fb.group({
@@ -91,8 +91,10 @@ export class OrganizationFormComponent implements OnInit {
         this.organizationsService
           .getInfo(this.organization()!.id)
           .subscribe((resp) => {
-            this.organization.set(resp.data as Organization);
-            this.workersSelected = [...this.organization()!.members!];
+            if (resp) {
+              this.organization.set(resp);
+              this.workersSelected = [...this.organization()!.members!];
+            }
           });
       }
       this.organizationForm.patchValue({

@@ -1,5 +1,5 @@
 import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
-import { provideRouter } from '@angular/router';
+import { provideRouter, withComponentInputBinding } from '@angular/router';
 
 import { routes } from './app.routes';
 import { providePrimeNG } from 'primeng/config';
@@ -12,7 +12,7 @@ export const appConfig: ApplicationConfig = {
   providers: [
     MessageService,
     provideZoneChangeDetection({ eventCoalescing: true }),
-    provideRouter(routes),
+    provideRouter(routes, withComponentInputBinding()),
     provideHttpClient(withFetch()),
     provideAnimationsAsync(),
     providePrimeNG({

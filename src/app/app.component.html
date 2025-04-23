@@ -1,2 +1,29 @@
+<app-sidemenu
+  [visible]="panelVisible()"
+  (onVisibleChange)="panelVisible.set($event)"
+/>
+<div class="flex flex-column">
+  <p-menubar class="p-1 pb-0" [model]="items">
+    <ng-template #item let-item let-root="root">
+      <a pRipple class="flex p-menubar-item-link justify-content-center">
+        <p-inputicon [styleClass]="item.icon" />
+      </a>
+    </ng-template>
+  </p-menubar>
+</div>
+<!-- <div class="flex gap-2">
+  <p-card class="w-full">
+    <div class="flex">
+      <p-button
+        icon="pi pi-bars"
+        class="ml-2"
+        [text]="true"
+        (click)="panelVisible.set(true)"
+      />
+      <span class="flex text-lg font-bold align-self-center">FVX M&A</span>
+    </div>
+  </p-card>
+</div> -->
+
 <p-toast />
 <router-outlet />

@@ -1,34 +1,17 @@
-import {
-  AfterViewInit,
-  ChangeDetectionStrategy,
-  Component,
-  inject,
-  OnInit,
-  signal,
-} from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import {
-  ConfirmationService,
-  MessageService,
-  PrimeTemplate,
-} from 'primeng/api';
-// import { TypeOfMeeting } from 'src/app/types-of-meetings/interfaces/type-of-meeting.interface';
-import { OrganizationsService } from '../../services/organizations.service';
-// import { TypesOfMeetingsService } from 'src/app/types-of-meetings/services/types-of-meetings.service';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { switchMap, tap } from 'rxjs';
-import { Organization } from '../../interfaces/organization.interface';
-// import { User } from '../../../screen/interfaces/organization.interface';
-import { User } from '../../../auth/interfaces/user.interface';
-import { Button } from 'primeng/button';
-// import { TypesOfMeetingsTableComponent } from '../../../types-of-meetings/pages/types-of-meetings-table/types-of-meetings-table.component';
+import { Component, inject, OnInit } from '@angular/core';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { NgFor, NgStyle } from '@angular/common';
+
+import { ConfirmationService, MessageService } from 'primeng/api';
+import { ButtonModule } from 'primeng/button';
 import { DividerModule } from 'primeng/divider';
 import { CardModule } from 'primeng/card';
+
+import { OrganizationsService } from '../../services/organizations.service';
+import { Organization } from '../../interfaces/organization.interface';
 import { TypesOfMeetingsTableComponent } from '@app/types-of-meetings/pages/types-of-meetings-table/types-of-meetings-table.component';
 import { LoadingComponent } from '@app/shared/loading/loading.component';
 import { OrganizationFormComponent } from '../organization-form/organization-form.component';
-// import { OrganizationsService } from '../../../screen/services/organizations.service';
 
 @Component({
   selector: 'app-organization-info',
@@ -36,19 +19,16 @@ import { OrganizationFormComponent } from '../organization-form/organization-for
   styleUrls: ['./organization-info.component.css'],
   providers: [ConfirmationService, MessageService],
   imports: [
-    CardModule,
-    PrimeTemplate,
-    DividerModule,
     NgFor,
     NgStyle,
-    // TypesOfMeetingsTableComponent,
-    Button,
-    RouterLink,
-    TypesOfMeetingsTableComponent,
     LoadingComponent,
     OrganizationFormComponent,
+    TypesOfMeetingsTableComponent,
+    CardModule,
+    ButtonModule,
+    DividerModule,
+    RouterLink,
   ],
-  // changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class OrganizationInfoComponent implements OnInit {
   organizationsService = inject(OrganizationsService);
@@ -57,12 +37,14 @@ export class OrganizationInfoComponent implements OnInit {
   loading = true;
   loadingTable = true;
   formDialogVisible: boolean = false;
+  agendasTableVisible: boolean = false;
+  reunionesTableVisible: boolean = false;
 
   constructor() {}
 
   ngOnInit(): void {
     const idOrg = this.route.snapshot.paramMap.get('id');
-    this.organizationsService.getInfoSignal(Number(idOrg)).subscribe((resp) => {
+    this.organizationsService.getInfo(Number(idOrg)).subscribe((resp) => {
       if (resp) {
         this.organization = resp;
         this.loading = false;
@@ -85,9 +67,10 @@ export class OrganizationInfoComponent implements OnInit {
       this.organizationsService
         .getInfo(this.organization.id)
         .subscribe((resp) => {
-          console.log(resp.data);
-          this.organization = resp.data as Organization;
-          this.loading = false;
+          if (resp) {
+            this.organization = resp;
+            this.loading = false;
+          }
         });
     }
   }

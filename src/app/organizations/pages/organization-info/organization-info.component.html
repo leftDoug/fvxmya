@@ -1,56 +1,57 @@
 @if (!loading) {
-<div class="flex flex-wrap align-items-center justify-content-center">
-  <div class="p-3 w-full">
-    <p-card class="min-w-700" [header]="organization ? organization.name : ''">
-      <ng-template pTemplate="content">
-        <div class="flex flex-row justify-content-end gap-2">
-          <p-button
-            label="Atrás"
-            icon="pi pi-arrow-left"
-            [text]="true"
-            routerLink="../../"
-          />
-          <p-button
-            label="Editar Organización"
-            severity="success"
-            icon="pi pi-pencil"
-            [text]="true"
-            (onClick)="showFormDialog()"
-          />
-        </div>
-        <div class="">
-          <p-divider align="left" type="solid">
-            <strong>Líder</strong>
-          </p-divider>
+<div class="flex flex-column">
+  <p-card
+    class="min-w-700 p-1"
+    [header]="organization ? organization.name : ''"
+  >
+    <ng-template pTemplate="content">
+      <div class="flex flex-row justify-content-end gap-2">
+        <p-button
+          label="Atrás"
+          icon="pi pi-arrow-left"
+          [text]="true"
+          routerLink="../../"
+        />
+        <p-button
+          label="Editar Organización"
+          severity="success"
+          icon="pi pi-pencil"
+          [text]="true"
+          (onClick)="showFormDialog()"
+        />
+      </div>
+      <div class="">
+        <p-divider align="left" type="solid">
+          <strong>Líder</strong>
+        </p-divider>
 
-          <p class="ml-6">
-            {{ organization ? organization.leader!.name : "" }}
-          </p>
-
-          <p-divider align="left" type="solid">
-            <strong>Integrantes</strong>
-          </p-divider>
-
-          <ul
-            class="ml-1"
-            [ngStyle]="{ 'list-style': 'none' }"
-            *ngFor="let worker of organization ? organization.members : []"
-          >
-            <li>{{ worker.name }}</li>
-          </ul>
-        </div>
-
-        <p-divider />
-        @if (!loadingTable) {
-        <app-types-of-meetings-table [organization]="organization" />
-        }@else{
-        <p>
-          <span class="text-lg font-bold text-red-500">Cargando tabla...</span>
+        <p class="ml-6">
+          {{ organization ? organization.leader!.name : "" }}
         </p>
-        }
-      </ng-template>
-    </p-card>
-  </div>
+
+        <p-divider align="left" type="solid">
+          <strong>Integrantes</strong>
+        </p-divider>
+
+        <ul
+          class="ml-1"
+          [ngStyle]="{ 'list-style': 'none' }"
+          *ngFor="let worker of organization ? organization.members : []"
+        >
+          <li>{{ worker.name }}</li>
+        </ul>
+      </div>
+
+      <p-divider />
+      @if (!loadingTable) {
+      <app-typesOfMeetings-table [organization]="organization" />
+      }@else{
+      <p>
+        <span class="text-lg font-bold text-red-500">Cargando tabla...</span>
+      </p>
+      }
+    </ng-template>
+  </p-card>
 </div>
 }@else {
 <app-loading />

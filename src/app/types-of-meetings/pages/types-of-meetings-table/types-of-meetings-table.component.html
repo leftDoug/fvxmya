@@ -4,7 +4,7 @@
   <p-table
     #tToms
     class="w-full"
-    [value]="typesOfMeetings"
+    [value]="typesOfMeetings()"
     [globalFilterFields]="['name']"
     [rowHover]="true"
     [scrollable]="true"
@@ -18,8 +18,8 @@
           icon="pi pi-plus"
           severity="success"
           [text]="true"
+          (onClick)="showFormDialog()"
         />
-        <!-- (onClick)="showForm(null)" -->
 
         <p-iconfield>
           <p-inputicon styleClass="pi pi-search" />
@@ -56,7 +56,7 @@
             icon="pi pi-briefcase"
             [text]="true"
             [rounded]="true"
-            [routerLink]="['/tipos-de-reuniones/reuniones/', typeOfMeeting.id]"
+            (onClick)="goToMeetings(typeOfMeeting.id)"
           />
 
           <p-button
@@ -65,8 +65,8 @@
             icon="pi pi-calendar-clock"
             [text]="true"
             [rounded]="true"
+            (onClick)="goToAgendas(typeOfMeeting.id)"
           />
-          <!-- (onClick)="showAgendasDialog(typeOfMeeting.id)" -->
 
           <p-divider layout="vertical" />
 
@@ -76,8 +76,8 @@
             severity="success"
             [text]="true"
             [rounded]="true"
+            (onClick)="showFormDialog(typeOfMeeting)"
           />
-          <!-- (onClick)="showForm(typeOfMeeting.id)" -->
 
           <p-button
             icon="pi pi-trash"
@@ -101,22 +101,27 @@
     <ng-template pTemplate="summary">
       <div class="row mt-3">
         <span class="col text-center"
-          >Tipos de Reunión:
-          {{ typesOfMeetings ? typesOfMeetings.length : 0 }}</span
+          >Tipos de Reunión: {{ typesOfMeetings().length }}</span
         >
       </div>
     </ng-template>
   </p-table>
 
-  <!-- <p-confirmDialog /> -->
+  <p-confirmDialog />
 
-  <!-- <app-type-of-meeting-form
-    *ngIf="tomDialog"
-    [organization]="organization"
-    [tom]="typeOfMeeting"
-    (onSubmit)="reloadTable($event)"
-    (onHide)="hideForm($event)"
-  /> -->
+  @if(formDialogVisible){
+  <app-typeOfMeeting-form
+    [typeOfMeeting]="selectedTom"
+    (onHide)="hideFormDialog()"
+  />
+  } @if(confirmDialogVisible){
+  <app-confirm-remove
+    [entityName]="removeEntityName!"
+    [entityType]="'Tipo de Reunión'"
+    [event]="removeEntityEvent!"
+    (onConfirm)="remove($event)"
+  />
+  }
 
   <!-- <app-agendas-table
     *ngIf="agendasDialog"
