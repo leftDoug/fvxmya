@@ -7,7 +7,6 @@
   (onHide)="hideDialog()"
 >
   <ng-template #content>
-    <pre>{{ loadingTopics }}</pre>
     <p-stepper [linear]="true" [value]="1">
       <p-step-list>
         <p-step [value]="1">Datos de la Reunión</p-step>
@@ -73,7 +72,7 @@
                         <p-select
                           inputId="secretary"
                           placeholder="-- Seleccione --"
-                          [options]="organization().members"
+                          [options]="organization?.members"
                           optionLabel="name"
                           optionValue="id"
                           appendTo="body"
@@ -351,8 +350,8 @@
               <p-pickList
                 sourceHeader="Miembros disponibles"
                 targetHeader="Miembros convocados"
-                [source]="availableMembers"
-                [target]="members"
+                [source]="sourceMembers()"
+                [target]="targetMembers"
                 [responsive]="true"
                 [showSourceControls]="false"
                 [showTargetControls]="false"
@@ -392,8 +391,8 @@
               <p-pickList
                 sourceHeader="Trabajadores disponibles"
                 targetHeader="Trabajadores invitados"
-                [source]="availableWorkers()"
-                [target]="guests"
+                [source]="sourceWorkers()"
+                [target]="targetGuests"
                 [responsive]="true"
                 [showSourceControls]="false"
                 [showTargetControls]="false"
@@ -415,8 +414,12 @@
                 (onClick)="activateCallback(3)"
               />
 
-              <p-button label="Guardar" icon="pi pi-check" [text]="true" />
-              <!-- (onClick)="save()" -->
+              <p-button
+                label="Guardar"
+                icon="pi pi-check"
+                [text]="true"
+                (onClick)="save()"
+              />
             </div>
           </ng-template>
         </p-step-panel>

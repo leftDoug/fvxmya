@@ -1,7 +1,10 @@
+@if (loading) {
+<app-loading />
+}@else {
 <div class="flex align-items-center justify-content-center">
   <p-card
     class="p-3 w-full"
-    [header]="'Organización: ' + meeting()?.organization?.name || ''"
+    [header]="'Organización: ' + typeOfMeeting?.organization?.name"
     [subheader]="'Tipo de Reunión: ' + meeting()?.typeOfMeeting?.name || ''"
   >
     <ng-template #content>
@@ -22,6 +25,81 @@
 
       @if (infoVisible) {
       <div class="flex flex-column justify-content-center">
+        <p-toolbar>
+          <ng-template #start>
+            <p-button
+              label="Exportar Acta"
+              severity="info"
+              icon="pi pi-file-export"
+              [text]="true"
+            />
+          </ng-template>
+
+          <ng-template #end>
+            @if
+            (meeting()?.status?.toLowerCase()!==status.PENDENT.toLowerCase()) {
+            <p-button
+              class="mr-2"
+              icon="pi pi-clipboard"
+              label="Acuerdos"
+              type="button"
+              [text]="true"
+              (onClick)="showAgreements()"
+            />
+            } @if
+            (meeting()?.status?.toLowerCase()===status.IN_PROCESS.toLowerCase())
+            {
+            <p-button
+              class="mr-2"
+              icon="pi pi-users"
+              label="Actualizar Asistencia"
+              type="button"
+              [text]="true"
+              (onClick)="showAttendanceDialog()"
+            />
+            } @if
+            (meeting()?.status?.toLowerCase()===status.IN_PROCESS.toLowerCase())
+            {
+            <p-button
+              class="mr-2"
+              icon="pi pi-lock"
+              label="Cerrar Reunión"
+              type="button"
+              [text]="true"
+              (onClick)="closeMeeting()"
+            />
+            } @if
+            (meeting()?.status?.toLowerCase()===status.PENDENT.toLowerCase()) {
+            <p-button
+              class="mr-2"
+              icon="pi pi-lock-open"
+              label="Abrir Reunión"
+              type="button"
+              [text]="true"
+              (onClick)="openMeeting()"
+            />
+            } @if
+            (meeting()?.status?.toLowerCase()!==status.CLOSED.toLowerCase()) {
+            <p-button
+              class="mr-4"
+              icon="pi pi-pencil"
+              label="Editar"
+              severity="success"
+              type="button"
+              [text]="true"
+              (onClick)="showFormDialog()"
+            />
+            }
+            <p-button
+              icon="pi pi-arrow-left"
+              label="Atrás"
+              type="button"
+              [text]="true"
+              (onClick)="goBack()"
+            />
+          </ng-template>
+        </p-toolbar>
+
         <div class="flex flex-row">
           <div class="col">
             <p-divider align="left" type="solid">
@@ -99,6 +177,19 @@
             </ul>
           </div>
         </div>
+
+        <div class="flex flex-row">
+          <div class="col">
+            <p-divider align="left">
+              <span class="text-color-secondary font-bold">Orden del Día</span>
+            </p-divider>
+            <ol>
+              @for (topic of meeting()?.topics; track topic.id) {
+              <li>{{ topic.name }}</li>
+              }
+            </ol>
+          </div>
+        </div>
       </div>
       }@else if(agreementsVisible){
       <app-agreements-table
@@ -107,163 +198,19 @@
       />
       }
     </ng-template>
-
-    @if(infoVisible){
-    <ng-template #footer>
-      <div class="flex gap-8 justify-content-center">
-        <p-button
-          icon="pi pi-arrow-left"
-          label="Atrás"
-          type="button"
-          [text]="true"
-          (onClick)="goBack()"
-        />
-
-        <p-button
-          icon="pi pi-pencil"
-          label="Editar"
-          type="button"
-          [text]="true"
-          (onClick)="showFormDialog()"
-        />
-
-        @if (meeting()?.status===status.PENDENT) {
-        <p-button
-          icon="pi pi-lock-open"
-          label="Abrir Reunión"
-          type="button"
-          [text]="true"
-          (onClick)="openMeeting()"
-        />
-        <!-- *ngIf="
-                meeting
-                  ? meeting.status
-                    ? meeting.status === 'pendiente'
-                    : false
-                  : false
-              " -->
-
-        } @if (meeting()?.status===status.IN_PROCESS) {
-        <p-button
-          icon="pi pi-users"
-          label="Actualizar Asistencia"
-          type="button"
-          [text]="true"
-          (onClick)="showAttendanceDialog()"
-        />
-        <!-- *ngIf="
-              meeting
-                ? meeting.status
-                  ? meeting.status === 'en proceso'
-                  : false
-                : false
-            " -->
-        } @if
-        (meeting()?.status===status.IN_PROCESS||meeting()?.status===status.CLOSED)
-        {
-        <p-button
-          icon="pi pi-clipboard"
-          label="Acuerdos"
-          type="button"
-          [text]="true"
-          (onClick)="showAgreements()"
-        />
-        <!-- [routerLink]="['/acuerdos/', meeting()?.id || '']" -->
-        <!-- *ngIf="
-              meeting
-                ? meeting.status
-                  ? meeting.status !== 'pendiente'
-                  : false
-                : false
-            " -->
-        } @if (meeting()?.status===status.IN_PROCESS) {
-        <p-button
-          icon="pi pi-lock"
-          label="Cerrar Reunión"
-          type="button"
-          [text]="true"
-          (onClick)="closeMeeting()"
-        />
-        <!-- *ngIf="
-              meeting
-                ? meeting.status
-                  ? meeting.status === 'en proceso'
-                  : false
-                : false
-            " -->
-        }
-      </div>
-    </ng-template>
-    }
-    <!-- <p-confirmDialog></p-confirmDialog> -->
   </p-card>
 </div>
-
-<!-- <p-dialog
-  [(visible)]="formVisible"
-  [style]="{ width: '50rem' }"
-  header="Editar Reunión"
-  [modal]="true"
-  styleClass="p-fluid"
-  [draggable]="false"
+@if (formDialogVisible) {
+<app-meeting-form
+  [meeting]="meeting()!"
+  [typeOfMeeting]="typeOfMeeting!"
+  (onUpdate)="updateInfo($event)"
   (onHide)="hideFormDialog()"
->
-  <ng-template pTemplate="content">
-    <app-meeting-form
-      *ngIf="formVisible"
-      [meeting]="meeting"
-      [organization]="meeting.organization!"
-      [typeOfMeeting]="meeting.typeOfMeeting!"
-      (onSave)="reloadInfo($event)"
-    />
-  </ng-template>
-</p-dialog> -->
-
-<!-- <p-dialog
-  [(visible)]="attendanceVisible"
-  [style]="{ width: '50rem' }"
-  header="Registrar asistencia"
-  [modal]="true"
-  styleClass="p-fluid"
-  [draggable]="false"
+/>
+} @if (attendanceDialogVisible) {
+<app-attendance-dialog
+  [meeting]="meeting()!"
+  (onUpdate)="updateInfo($event)"
   (onHide)="hideAttendanceDialog()"
->
-  <ng-template pTemplate="content">
-    <div class="flex flex-column">
-      <p-pickList
-        sourceHeader="Trabajadores ausentes"
-        targetHeader="Trabajadores presentes"
-        [source]="participants"
-        [target]="attendants"
-        [responsive]="true"
-        [showSourceControls]="false"
-        [showTargetControls]="false"
-        [sourceStyle]="{ height: '15rem' }"
-      >
-        <ng-template let-worker pTemplate="item">
-          <div class="">
-            <span class="font-bold">{{ worker.name }}</span>
-          </div>
-        </ng-template>
-      </p-pickList>
-    </div>
-  </ng-template>
-
-  <ng-template pTemplate="footer">
-    <div class="flex justify-content-evenly">
-      <p-button
-        label="Cancelar"
-        [text]="true"
-        icon="pi pi-times"
-        (onClick)="hideDialog()"
-      />
-
-      <p-button
-        label="Guardar"
-        icon="pi pi-check"
-        [text]="true"
-        (onClick)="saveAttendance()"
-      />
-    </div>
-  </ng-template>
-</p-dialog> -->
+/>
+} }

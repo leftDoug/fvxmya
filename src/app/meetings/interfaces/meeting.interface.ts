@@ -1,5 +1,5 @@
 import { User } from '@app/auth/interfaces/user.interface';
-import { Organization } from '@app/organizations/interfaces/organization.interface';
+import { Topic } from '@app/topics/interfaces/topic.interface';
 import { TypeOfMeeting } from '@app/types-of-meetings/interfaces/type-of-meeting.interface';
 
 export interface Meeting {
@@ -9,27 +9,31 @@ export interface Meeting {
   date: Date;
   startTime: Date;
   endTime: Date;
+  topics: Topic[];
   typeOfMeeting?: TypeOfMeeting;
-  organization?: Organization;
+  // organization?: Organization;
   secretary?: User;
   idTypeOfMeeting?: number;
   idSecretary?: string;
-  participants: User[] | string[];
+  participants?: User[];
+  members?: User[];
+  guests?: User[];
   status?: Status | string;
 }
 
 export enum Session {
-  ORDINARY = 'ordinaria',
-  EXTRAORDINARY = 'extraordinaria',
+  ORDINARY = 'ORDINARIA',
+  EXTRAORDINARY = 'EXTRAORDINARIA',
 }
 
 export enum Status {
-  PENDENT = 'pendiente',
-  IN_PROCESS = 'en proceso',
-  CLOSED = 'completada',
+  PENDENT = 'PENDIENTE',
+  IN_PROCESS = 'EN PROCESO',
+  CLOSED = 'COMPLETADA',
 }
 
 export interface MeetingResponse {
+  ok: boolean;
   data?: Meeting | Meeting[];
   message?: string;
 }

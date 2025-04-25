@@ -14,15 +14,21 @@ import {
   Status as StatusUser,
   User,
 } from '@app/auth/interfaces/user.interface';
+import { AttendanceDialogComponent } from '@app/meetings/components/attendance-dialog/attendance-dialog.component';
+import { LoadingComponent } from '@app/shared/loading/loading.component';
+import { TypeOfMeeting } from '@app/types-of-meetings/interfaces/type-of-meeting.interface';
+import { TypesOfMeetingsService } from '@app/types-of-meetings/services/types-of-meetings.service';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { DividerModule } from 'primeng/divider';
 import { TagModule } from 'primeng/tag';
+import { ToolbarModule } from 'primeng/toolbar';
 import {
   Meeting,
   Status as StatusMeeting,
 } from '../../interfaces/meeting.interface';
 import { MeetingsService } from '../../services/meetings.service';
+import { MeetingFormComponent } from '../meeting-form/meeting-form.component';
 
 @Component({
   selector: 'app-meeting-info',
@@ -36,6 +42,10 @@ import { MeetingsService } from '../../services/meetings.service';
     ButtonModule,
     // RouterLink,
     AgreementsTableComponent,
+    LoadingComponent,
+    MeetingFormComponent,
+    AttendanceDialogComponent,
+    ToolbarModule,
   ],
   templateUrl: './meeting-info.component.html',
   styleUrls: ['./meeting-info.component.css'],
@@ -44,7 +54,9 @@ export class MeetingInfoComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly meetingsService = inject(MeetingsService);
+  private readonly tomsService = inject(TypesOfMeetingsService);
 
+  typeOfMeeting?: TypeOfMeeting;
   meeting = signal<Meeting | undefined>(undefined);
   participants = computed(() => {
     if (this.meeting()?.id) {
@@ -66,22 +78,27 @@ export class MeetingInfoComponent implements OnInit {
   });
   attendants = computed(() => {
     if (this.participants().length > 0) {
-      return this.participants().filter((w) => w.status === StatusUser.PRESENT);
+      return this.participants().filter(
+        (w) => w.status?.toLowerCase() === StatusUser.PRESENT.toLowerCase()
+      );
     }
     return [];
   });
   missing = computed(() => {
     if (this.participants().length > 0) {
-      return this.participants().filter((w) => w.status === StatusUser.ABSENT);
+      return this.participants().filter(
+        (w) => w.status?.toLowerCase() === StatusUser.ABSENT.toLowerCase()
+      );
     }
     return [];
   });
   status = StatusMeeting;
 
-  formVisible: boolean = false;
-  attendanceVisible: boolean = false;
+  formDialogVisible: boolean = false;
+  attendanceDialogVisible: boolean = false;
   agreementsVisible: boolean = false;
   infoVisible: boolean = true;
+  loading: boolean = true;
 
   idMeeting = input.required<string>({ alias: 'id' });
 
@@ -89,53 +106,26 @@ export class MeetingInfoComponent implements OnInit {
 
   ngOnInit(): void {
     // const idMeeting = parseInt(this.route.snapshot.paramMap.get('id')!);
-    this.meetingsService.getInfo(Number(this.idMeeting())).subscribe((resp) => {
-      if (resp) {
-        this.meeting.set(resp);
-        // this.participants=resp.participants as User[]
-        // this.members=this.participants.filter(w=>w.member)
-        // this.guests=this.participants.filter(w=>!w.member)
-        // this.attendants=this.participants.filter(w=>w.status===Status.PRESENT)
-        // this.missing=this.participants.filter(w=>w.status===Status.ABSENT)
+    this.meetingsService.getInfo(Number(this.idMeeting())).subscribe((meet) => {
+      if (meet) {
+        console.log(meet);
+        this.meeting.set(meet);
+        this.tomsService.getInfo(meet.typeOfMeeting?.id!).subscribe((tom) => {
+          if (tom) {
+            this.typeOfMeeting = tom;
+            this.loading = false;
+          }
+        });
       }
     });
-    // this.activatedRoute.params
-    //   .pipe(switchMap(({ id }) => this.meetingsService.getInfo(id)))
-    //   .subscribe((resp3) => {
-    //     if (resp3.ok) {
-    //       this.meeting = resp3.arg as Meeting;
-
-    //       const workers = [...(this.meeting.participants as User[])];
-
-    //       this.members = [...workers].filter(
-    //         (worker) => (worker as User).member!
-    //       );
-
-    //       this.guests = [...workers].filter(
-    //         (worker) => !(worker as User).member!
-    //       );
-
-    //       this.missing = [...workers].filter(
-    //         (worker) => (worker as User).status === 'ausente'
-    //       );
-
-    //       this.participants = [...workers].filter(
-    //         (worker) => (worker as User).status !== 'presente'
-    //       );
-
-    //       this.attendants = [...workers].filter(
-    //         (worker) => (worker as User).status === 'presente'
-    //       );
-    //     }
-    //   });
   }
 
   showAttendanceDialog() {
-    this.attendanceVisible = true;
+    this.attendanceDialogVisible = true;
   }
 
   showFormDialog() {
-    this.formVisible = true;
+    this.formDialogVisible = true;
   }
 
   // hideDialog() {
@@ -144,46 +134,11 @@ export class MeetingInfoComponent implements OnInit {
   // }
 
   hideFormDialog() {
-    this.formVisible = false;
+    this.formDialogVisible = false;
   }
 
   hideAttendanceDialog() {
-    this.attendanceVisible = false;
-  }
-
-  // reloadInfo(ok: boolean) {
-  //   if (ok) {
-  //     // this.activatedRoute.params
-  //     //   .pipe(switchMap(({ id }) => this.meetingsService.getInfo(id)))
-  //     //   .subscribe((resp3) => {
-  //     //     if (resp3.ok) {
-  //     //       this.meeting = resp3.arg as Meeting;
-  //     //       this.members = (this.meeting.participants as User[]).filter(
-  //     //         (worker) => worker.member
-  //     //       );
-  //     //       this.guests = (this.meeting.participants as User[]).filter(
-  //     //         (worker) => !worker.member
-  //     //       );
-  //     //       this.missing = (this.meeting.participants as User[]).filter(
-  //     //         (worker) => worker.status === 'ausente'
-  //     //       );
-  //     //     }
-  //     //   });
-
-  //     this.hideDialog();
-  //   }
-  // }
-
-  saveAttendance() {
-    this.meetingsService
-      .setAttendance(this.meeting()!.id, {
-        attendants: [...this.attendants().map((w) => w.id)],
-      })
-      .subscribe((resp) => {
-        if (resp) {
-          this.meeting.set(resp);
-        }
-      });
+    this.attendanceDialogVisible = false;
   }
 
   openMeeting() {
@@ -204,12 +159,12 @@ export class MeetingInfoComponent implements OnInit {
   }
 
   getSeverity(status: string) {
-    switch (status) {
-      case StatusMeeting.PENDENT:
+    switch (status.toLowerCase()) {
+      case StatusMeeting.PENDENT.toLowerCase():
         return 'warn';
-      case StatusMeeting.IN_PROCESS:
+      case StatusMeeting.IN_PROCESS.toLowerCase():
         return 'info';
-      case StatusMeeting.CLOSED:
+      case StatusMeeting.CLOSED.toLowerCase():
         return 'success';
       default:
         return 'danger';
@@ -231,5 +186,9 @@ export class MeetingInfoComponent implements OnInit {
   hideAgreements() {
     this.agreementsVisible = false;
     this.infoVisible = true;
+  }
+
+  updateInfo(meet: Meeting) {
+    this.meeting.set(meet);
   }
 }

@@ -1,0 +1,47 @@
+<p-dialog
+  [(visible)]="visible"
+  [style]="{ width: '50rem' }"
+  header="Registrar asistencia"
+  [modal]="true"
+  [draggable]="false"
+  (onHide)="hideDialog()"
+>
+  <ng-template #content>
+    <div class="flex flex-column">
+      <p-pickList
+        sourceHeader="Trabajadores ausentes"
+        targetHeader="Trabajadores presentes"
+        [source]="participants"
+        [target]="attendants"
+        [responsive]="true"
+        [showSourceControls]="false"
+        [showTargetControls]="false"
+        [sourceStyle]="{ height: '15rem' }"
+      >
+        <ng-template let-worker #item>
+          <div class="">
+            <span class="font-medium">{{ worker.name }}</span>
+          </div>
+        </ng-template>
+      </p-pickList>
+    </div>
+  </ng-template>
+
+  <ng-template pTemplate="footer">
+    <div class="flex justify-content-end gap-2">
+      <p-button
+        label="Cancelar"
+        [text]="true"
+        icon="pi pi-times"
+        (onClick)="hideDialog()"
+      />
+
+      <p-button
+        label="Guardar"
+        icon="pi pi-check"
+        [text]="true"
+        (onClick)="save()"
+      />
+    </div>
+  </ng-template>
+</p-dialog>

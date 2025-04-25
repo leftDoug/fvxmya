@@ -1,6 +1,6 @@
+import { NgIf } from '@angular/common';
 import {
   Component,
-  computed,
   inject,
   input,
   OnInit,
@@ -14,19 +14,15 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { Meeting, Session } from '../../interfaces/meeting.interface';
-// import { ValidatorService } from 'src/app/validator/validator.service';
-import { User } from '@app/auth/interfaces/user.interface';
-import { AuthService } from 'src/app/auth/services/auth.service';
-import { Organization } from 'src/app/organizations/interfaces/organization.interface';
-import { TypeOfMeeting } from 'src/app/types-of-meetings/interfaces/type-of-meeting.interface';
-// import { OrganizationsService } from 'src/app/organizations/services/organizations.service';
-import { NgIf } from '@angular/common';
-import { ActivatedRoute } from '@angular/router';
 import { AgendasService } from '@app/agendas/services/agendas.service';
+import { User } from '@app/auth/interfaces/user.interface';
+import { MeetingsService } from '@app/meetings/services/meetings.service';
+import { OrganizationsService } from '@app/organizations/services/organizations.service';
 import { NotificatorService } from '@app/services/notificator.service';
 import { LoadingComponent } from '@app/shared/loading/loading.component';
+import { ValidatorService } from '@app/shared/services/validator.service';
 import { Topic } from '@app/topics/interfaces/topic.interface';
+import { TypeOfMeeting } from '@app/types-of-meetings/interfaces/type-of-meeting.interface';
 import { ButtonModule } from 'primeng/button';
 import { DatePickerModule } from 'primeng/datepicker';
 import { DialogModule } from 'primeng/dialog';
@@ -36,6 +32,9 @@ import { InputTextModule } from 'primeng/inputtext';
 import { PickListModule } from 'primeng/picklist';
 import { SelectModule } from 'primeng/select';
 import { StepperModule } from 'primeng/stepper';
+import { AuthService } from 'src/app/auth/services/auth.service';
+import { Organization } from 'src/app/organizations/interfaces/organization.interface';
+import { Meeting, Session } from '../../interfaces/meeting.interface';
 
 @Component({
   selector: 'app-meeting-form',
@@ -62,57 +61,32 @@ export class MeetingFormComponent implements OnInit {
   private readonly authService = inject(AuthService);
   private readonly notificatorService = inject(NotificatorService);
   private readonly agendasService = inject(AgendasService);
-  private readonly route = inject(ActivatedRoute);
+  private readonly validatorService = inject(ValidatorService);
+  private readonly meetingsService = inject(MeetingsService);
+  private readonly organizationsService = inject(OrganizationsService);
+
+  meeting = input<Meeting>();
+  typeOfMeeting = input.required<TypeOfMeeting>();
 
   meetingForm: FormGroup;
-
   newMeeting!: Meeting;
-
   sessions: Session[] = [Session.ORDINARY, Session.EXTRAORDINARY];
-
-  // organizationMembers: Worker[] = [];
-  availableMembers: User[] = [];
-  availableWorkers = computed(() => {
-    if (this.meeting()?.id) {
-      return this.authService
-        .getAllWorkersFormatted()
-        .filter((w) => !this.guests.some((w2) => w2.id === w.id));
-    }
-    return this.authService
-      .getAllWorkersFormatted()
-      .filter(
-        (w) =>
-          w.id !== this.organization().leader?.id &&
-          !this.organization().members?.some((w2) => w2.id === w.id)
-      );
-  });
-  members: User[] = [];
-  guests: User[] = [];
-  // sourceTopics: string[] = ['asd', 'qwe', 'zxc'];
-  // targetTopics: string[] = [];
+  organization?: Organization;
+  sourceMembers = signal<User[]>([]);
+  sourceWorkers = signal<User[]>([]);
   sourceTopics = signal<Topic[]>([]);
+  targetMembers: User[] = [];
+  targetGuests: User[] = [];
   targetTopics: Topic[] = [];
 
-  dataSubmitted: boolean = false;
   visible: boolean = true;
-  submitted: boolean = false;
+  dataSubmitted: boolean = false;
   loadingTopics: boolean = true;
 
-  typeOfMeeting = input.required<TypeOfMeeting>();
-  organization = input.required<Organization>();
-  meeting = input<Meeting | null>(null);
-  onChanges = output<boolean>();
+  onUpdate = output<Meeting>();
   onHide = output<void>();
-  // @Input() organization!: Organization;
-  // @Input() meeting?: Meeting;
-
-  // @Output() onSave = new EventEmitter<boolean>();
-
-  idTom!: number;
 
   constructor() {
-    this.idTom = Number(this.route.snapshot.paramMap.get('id')!);
-    // private validatorService: ValidatorService,
     this.meetingForm = this.fb.group(
       {
         name: ['', [Validators.required, Validators.minLength(5)]],
@@ -121,65 +95,42 @@ export class MeetingFormComponent implements OnInit {
         startTime: [new Date(), Validators.required],
         endTime: [new Date(), Validators.required],
         session: ['', Validators.required],
+      },
+      {
+        validators: [
+          this.validatorService.compareBeginningAndEnd('startTime', 'endTime'),
+        ],
       }
-      // {
-      //   validators: [
-      //     this.validatorService.compareBeginningAndEnd('startTime', 'endTime'),
-      //   ],
-      // }
     );
     this.authService.getAllWorkers();
   }
 
   ngOnInit(): void {
-    // this.availableWorkers.set(
-    //   this.authService
-    //     .getAllWorkersFormatted()
-    //     .filter(
-    //       (w) =>
-    //         w.id !== this.organization().leader?.id &&
-    //         !this.organization().members?.some((w2) => w2.id === w.id)
-    //     )
-    // );
+    console.log(this.meeting());
+    this.organizationsService
+      .getInfo(this.typeOfMeeting().organization?.id!)
+      .subscribe((org) => {
+        if (org) {
+          this.organization = org;
+        }
+      });
 
-    // this.organizationsService
-    //   .getWorkers(this.organization.id)
-    //   .subscribe((resp) => {
-    //     this.organizationMembers = resp.arg as Worker[];
-
-    //     if (this.meeting) {
-    //       this.members = (this.meeting.participants as Worker[]).filter(
-    //         (worker) => worker.member
-    //       );
-    //       this.guests = (this.meeting.participants as Worker[]).filter(
-    //         (worker) => !worker.member
-    //       );
-    //     }
-
-    //     this.organizationsService
-    //       .getById(this.organization.id)
-    //       .subscribe((resp2) => {
-    //         this.authService.getWorkers().subscribe((resp3) => {
-    //           this.availableWorkers = (resp3.arg as Worker[]).filter(
-    //             (worker) =>
-    //               worker.id !== (resp2.arg as Organization).idLeader &&
-    //               !this.organizationMembers.some(
-    //                 (worker2) => worker2.id === worker.id
-    //               )
-    //           );
-    //         });
-    //       });
-    //   });
-
-    if (this.meeting()?.id) {
+    if (this.meeting()) {
       this.meetingForm.patchValue({
         name: this.meeting()!.name,
         date: new Date(this.meeting()!.date),
         startTime: new Date(this.meeting()!.startTime),
         endTime: new Date(this.meeting()!.endTime),
         session: this.meeting()!.session,
-        secretary: this.meeting()!.secretary!.id,
+        idSecretary: this.meeting()!.secretary!.id,
       });
+      this.targetTopics = [...this.meeting()?.topics!];
+      this.targetMembers = [
+        ...(this.meeting()?.participants as User[]).filter((w) => w.member),
+      ];
+      this.targetGuests = [
+        ...(this.meeting()?.participants as User[]).filter((w) => !w.member),
+      ];
     }
   }
 
@@ -213,7 +164,6 @@ export class MeetingFormComponent implements OnInit {
     if (this.name.errors!['required']) {
       return 'El nombre es requerido';
     }
-
     return '';
   }
 
@@ -223,7 +173,6 @@ export class MeetingFormComponent implements OnInit {
     if (this.secretary.errors!['required']) {
       return 'El secretario es requerido';
     }
-
     return '';
   }
 
@@ -233,7 +182,6 @@ export class MeetingFormComponent implements OnInit {
     if (this.date.errors!['required']) {
       return 'La fecha es requerida';
     }
-
     return '';
   }
 
@@ -243,7 +191,6 @@ export class MeetingFormComponent implements OnInit {
     if (this.startTime.errors!['required']) {
       return 'La hora de inicio es requerida';
     }
-
     return '';
   }
 
@@ -255,7 +202,6 @@ export class MeetingFormComponent implements OnInit {
     } else if (this.meetingForm.get('endTime')?.errors!['endBeginningError']) {
       return 'La hora de fin no puede ser anterior a la hora de inicio';
     }
-
     return '';
   }
 
@@ -265,65 +211,57 @@ export class MeetingFormComponent implements OnInit {
     if (this.session.errors!['required']) {
       return 'La sesión es requerida';
     }
-
     return '';
   }
 
   setAvailableGuests() {
-    if (this.meeting()?.id) {
-      // this.availableWorkers.set(
-      //   this.availableWorkers().filter(
-      //     (w) => !this.guests.some((w2) => w2.id === w.id)
-      //   )
-      // );
-    }
+    this.sourceWorkers.set(
+      this.authService
+        .getAllWorkersFormatted()
+        .filter(
+          (w) =>
+            w.id !== this.organization?.leader?.id &&
+            !this.organization?.members?.some((m) => m.id === w.id) &&
+            !this.targetGuests.some((g) => g.id === w.id)
+        )
+    );
   }
 
   submitData() {
     this.dataSubmitted = true;
 
     if (this.meetingForm.valid) {
-      this.getTopics();
-      this.setAvailableMembers();
+      this.setTopicsList();
+      this.setMembersLists();
+      this.setAvailableGuests();
     }
   }
 
-  // setTopics() {
-  //   this.agendasService
-  //     .getTopicsFrom(this.idTom, (this.date.value as Date).getFullYear())
-  //     .subscribe((resp) => {
-  //       if (resp) {
-  //         this.sourceTopics = resp;
-  //       }
-  //     });
-  // }
+  setMembersLists() {
+    this.targetMembers = [
+      ...this.targetMembers.filter((m) => m.id !== this.secretary.value),
+    ];
 
-  setAvailableMembers() {
-    if (this.meeting()?.id) {
-      this.members = this.members.filter((m) => m.id !== this.secretary.value);
-
-      this.availableMembers = this.organization().members!.filter(
-        (m) =>
-          m.id !== this.secretary.value &&
-          !this.members.some((m2) => m2.id === m.id)
-      );
-    } else {
-      this.availableMembers = this.organization().members!.filter(
-        (m) => m.id !== this.secretary.value
+    if (this.organization) {
+      this.sourceMembers.set(
+        this.organization.members!.filter(
+          (m) =>
+            m.id !== this.secretary.value &&
+            !this.targetMembers.some((m2) => m2.id === m.id)
+        )
       );
     }
   }
 
   checkParticipants() {
-    if (this.members.length === 0) {
+    if (this.targetMembers.length === 0) {
       this.notificatorService.notificate({
         severity: 'error',
         summary: 'ERROR',
         detail: 'Debe haber al menos un miembro convocado',
       });
     }
-
-    return this.members.length !== 0;
+    return this.targetMembers.length !== 0;
   }
 
   checkTopics() {
@@ -334,103 +272,58 @@ export class MeetingFormComponent implements OnInit {
         detail: 'Debe haber al menos un Tema para tratar en la Reunión',
       });
     }
-
     return this.targetTopics.length !== 0;
   }
 
-  hideDialog(hasChanges?: boolean) {
-    this.submitted = false;
-    this.meetingForm.reset();
-    // this.availableWorkers.set(
-    //   this.authService
-    //     .getAllWorkersFormatted()
-    //     .filter(
-    //       (w) =>
-    //         w.id !== this.organization().leader?.id &&
-    //         !this.organization().members?.some((w2) => w2.id === w.id)
-    //     )
-    // );
-    this.availableMembers = [
-      ...this.organization().members!.filter(
-        (m) => m.id !== this.secretary.value
-      ),
-    ];
-    this.members = [];
-    this.guests = [];
-    if (hasChanges) {
-      this.onChanges.emit(hasChanges);
+  hideDialog(meet?: Meeting) {
+    if (meet) {
+      this.onUpdate.emit(meet);
     }
     this.onHide.emit();
   }
 
-  // submit() {
-  //   this.submitted = true;
-  //   this.organizationForm.valid && this.setSourceWorkers();
-  // }
+  save(): void {
+    this.newMeeting = {
+      id: this.meeting()?.id || 0,
+      name: this.name.value.trim(),
+      date: this.date.value,
+      startTime: this.startTime.value,
+      endTime: this.endTime.value,
+      session: this.session.value,
+      idTypeOfMeeting: this.typeOfMeeting().id,
+      idSecretary: this.secretary.value,
+      members: [...this.targetMembers],
+      guests: [...this.targetGuests],
+      topics: [...this.targetTopics],
+    };
 
-  // save(): void {
-  //   this.newMeeting = {
-  //     id: this.meeting ? this.meeting.id : '',
-  //     name: this.name.value.trim(),
-  //     date: this.date.value,
-  //     startTime: this.startTime.value,
-  //     endTime: this.endTime.value,
-  //     session: this.session.value,
-  //     idTypeOfMeeting: this.typeOfMeeting.id,
-  //     idSecretary: this.secretary.value,
-  //     members: this.members.map((member) => member.id),
-  //     guests: this.guests.map((guest) => guest.id),
-  //   };
+    if (!this.meeting()) {
+      this.meetingsService.add(this.newMeeting).subscribe((ok) => {
+        if (ok) {
+          this.hideDialog();
+        }
+      });
+    } else {
+      this.meetingsService.update(this.newMeeting).subscribe((meet) => {
+        if (meet) {
+          this.hideDialog(meet);
+        }
+      });
+    }
+  }
 
-  //   if (!this.meeting) {
-  //     this.meetingsService.add(this.newMeeting).subscribe((resp) => {
-  //       this.messageService.add(getNotification(resp.msg!, resp.ok));
-
-  //       if (resp.ok) {
-  //         this.meetingForm.reset({
-  //           id: '',
-  //           name: '',
-  //           date: new Date(),
-  //           startTime: new Date(),
-  //           endTime: new Date(),
-  //           session: '',
-  //         });
-
-  //         this.onSave.emit(true);
-  //       }
-  //     });
-  //   } else {
-  //     this.meetingsService.update(this.newMeeting).subscribe((resp) => {
-  //       this.messageService.add(getNotification(resp.msg!, resp.ok));
-
-  //       if (resp.ok) {
-  //         this.meetingForm.reset({
-  //           id: '',
-  //           name: '',
-  //           date: new Date(),
-  //           startTime: new Date(),
-  //           endTime: new Date(),
-  //           session: '',
-  //         });
-
-  //         this.onSave.emit(true);
-  //       }
-  //     });
-  //   }
-  // }
-
-  getTopics() {
-    console.log('LOADING:', this.loadingTopics);
+  setTopicsList() {
     this.agendasService
       .getTopicsFrom(
         this.typeOfMeeting().id,
         (this.date.value as Date).getFullYear()
       )
       .subscribe((resp) => {
-        this.sourceTopics.set(resp);
-        console.log('TOPICS:', this.sourceTopics());
+        const topics: Topic[] = resp;
+        this.sourceTopics.set(
+          topics.filter((t) => !this.targetTopics.some((t2) => t2.id === t.id))
+        );
         this.loadingTopics = false;
-        console.log('LOADING:', this.loadingTopics);
       });
   }
 }
