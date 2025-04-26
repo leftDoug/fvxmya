@@ -1,8 +1,16 @@
 import { DatePipe, UpperCasePipe } from '@angular/common';
-import { Component, input, OnInit, output } from '@angular/core';
+import {
+  Component,
+  computed,
+  inject,
+  input,
+  OnInit,
+  output,
+} from '@angular/core';
 import { FormBuilder } from '@angular/forms';
 import { Agreement } from '@app/agreements/interfaces';
 import { ResponseFormComponent } from '@app/responses/components/response-form/response-form.component';
+import { LoadingComponent } from '@app/shared/loading/loading.component';
 import { getSeverity, getStatus } from '@app/shared/severity-status';
 import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
@@ -11,6 +19,7 @@ import { TagModule } from 'primeng/tag';
 import { AuthService } from 'src/app/auth/services/auth.service';
 import { MeetingsService } from 'src/app/meetings/services/meetings.service';
 import { AgreementsService } from '../../services/agreements.service';
+import { AgreementFormComponent } from '../agreement-form/agreement-form.component';
 
 @Component({
   selector: 'app-agreement-info',
@@ -22,11 +31,17 @@ import { AgreementsService } from '../../services/agreements.service';
     ButtonModule,
     UpperCasePipe,
     ResponseFormComponent,
+    LoadingComponent,
+    AgreementFormComponent,
   ],
   templateUrl: './agreement-info.component.html',
   styleUrls: ['./agreement-info.component.css'],
 })
 export class AgreementInfoComponent implements OnInit {
+  private readonly agreementsService = inject(AgreementsService);
+
+  id = input.required<string>();
+
   // responses: Response[] = [];
 
   // agreement: Agreement = {
@@ -39,6 +54,20 @@ export class AgreementInfoComponent implements OnInit {
   // meeting: string = '';
   // responsible: string = '';
 
+  agreement = computed(() => {
+    if (!this.id()) {
+      return {
+        isLoading: true,
+        data: undefined,
+      };
+    } else {
+      return {
+        isLoading: false,
+        data: this.agreementsService.getInfo(this.id()),
+      };
+    }
+  });
+
   formDialogVisible: boolean = false;
   responseDialogVisible: boolean = false;
   infoVisible: boolean = true;
@@ -47,14 +76,12 @@ export class AgreementInfoComponent implements OnInit {
 
   isLeader: boolean = false;
 
-  agreement = input.required<Agreement>();
   onHide = output<void>();
 
   // TODO: poner un delay para k no se vea el estado inicial al abrir la pagina
 
   constructor(
     private fb: FormBuilder,
-    private agreementsService: AgreementsService,
     private meetingsService: MeetingsService,
     private authService: AuthService
   ) {}
@@ -96,11 +123,13 @@ export class AgreementInfoComponent implements OnInit {
   // }
 
   showFormDialog() {
+    this.infoVisible = false;
     this.formDialogVisible = true;
   }
 
   hideForm() {
     this.formDialogVisible = false;
+    this.infoVisible = true;
   }
 
   showResponseDialog() {
@@ -113,7 +142,7 @@ export class AgreementInfoComponent implements OnInit {
     this.infoVisible = true;
   }
 
-  reloadInfo(event: boolean) {
+  reloadInfo(agr: Agreement) {
     // if (event) {
     //   this.activatedRoute.params
     //     .pipe(
@@ -128,62 +157,23 @@ export class AgreementInfoComponent implements OnInit {
     // }
   }
 
-  save() {
-    // if (this.responseForm.valid) {
-    //   this.agreementsService
-    //     .addResponse({
-    //       idAgreement: this.agreement.id,
-    //       content: this.content.value,
-    //     })
-    //     .subscribe((resp) => {
-    //       this.messageService.add(getNotification(resp.msg!, resp.ok));
-    //       if (resp.ok) {
-    //         this.reloadInfo(true);
-    //         this.hideResponseDialog();
-    //       }
-    //     });
-    // }
-  }
-
   setCompleted() {
-    // this.agreementsService.setCompleted(this.agreement.id).subscribe((resp) => {
-    //   this.messageService.add(getNotification(resp.msg!, resp.ok));
-    //   if (resp.ok) {
-    //     this.reloadInfo(true);
-    //   }
-    // });
+    this.agreementsService.setCompleted(this.agreement().data!.id);
   }
 
-  cancel(): void {
-    // this.confirmationService.confirm({
-    //   message: 'Está seguro de que desea anular este acuerdo?',
-    //   header: 'Anular Acuerdo',
-    //   icon: 'pi pi-exclamation-triangle',
-    //   acceptLabel: 'Sí',
-    //   accept: () => {
-    //     this.messageService.add({
-    //       severity: 'info',
-    //       detail: 'El acuerdo ha sido anulado',
-    //       summary: 'Acuerdo Anulado',
-    //     });
-    //     this.agreement.state = false;
-    //     this.agreementsService.update(this.agreement).subscribe();
-    //   },
-    //   reject: () => {},
-    //   rejectButtonStyleClass: 'mx-3',
-    // });
+  setCancelled(): void {
+    this.agreementsService.setCancelled(this.agreement().data!.id);
   }
 
-  hide() {
+  hideDialog() {
     this.onHide.emit();
   }
 
-  getStatusLocal(agreement: Agreement) {
-    return getStatus(agreement);
+  get status() {
+    return getStatus(this.agreement().data!);
   }
 
-  getSeverityLocal(agreement: Agreement) {
-    const status = getStatus(agreement);
-    return getSeverity(status);
+  get severity() {
+    return getSeverity(this.status);
   }
 }

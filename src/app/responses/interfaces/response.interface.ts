@@ -4,7 +4,7 @@ export interface Response {
   id: number;
   content: string;
   agreement?: Agreement;
-  idAgreement?: number;
+  idAgreement?: string;
 }
 
 export interface ResponseResponse {

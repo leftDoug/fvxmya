@@ -106,7 +106,6 @@ export class MeetingFormComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    console.log(this.meeting());
     this.organizationsService
       .getInfo(this.typeOfMeeting().organization?.id!)
       .subscribe((org) => {

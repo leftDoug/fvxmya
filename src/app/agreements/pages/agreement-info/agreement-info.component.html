@@ -1,33 +1,31 @@
-@if (infoVisible) {
+@if (infoVisible) { @if (agreement().isLoading) {
+<app-loading />
+}@else {
 <p-dialog
   [(visible)]="visible"
   [style]="{ width: '50rem' }"
   [modal]="true"
   [draggable]="false"
-  (onHide)="hide()"
+  (onHide)="hideDialog()"
 >
   <ng-template #header>
     <div class="flex flex-row gap-2">
       <div class="flex flex-column">
-        <h2 class="my-0">Acuerdo No. {{ agreement().number }}</h2>
+        <h2 class="my-0">Acuerdo No. {{ agreement().data!.number }}</h2>
       </div>
 
       <div class="flex flex-column align-self-center">
-        <p-tag
-          [value]="getStatusLocal(agreement()) | uppercase"
-          [severity]="getSeverityLocal(agreement())"
-        />
+        <p-tag [value]="status | uppercase" [severity]="severity" />
       </div>
     </div>
   </ng-template>
-  <!-- <app-loading /> -->
 
   <ng-template #content>
     <div class="flex flex-column justify-content-center w-full">
       <p-divider align="left" type="solid">
         <strong>Contenido</strong>
       </p-divider>
-      <span class="ml-5">{{ agreement().content }}</span>
+      <span class="ml-5">{{ agreement().data!.content }}</span>
 
       <div class="grid">
         <div class="col">
@@ -35,7 +33,7 @@
             <strong>Reunión</strong>
           </p-divider>
           <span class="ml-5">
-            {{ agreement().meeting?.name }}
+            {{ agreement().data!.meeting?.name }}
           </span>
         </div>
 
@@ -44,7 +42,7 @@
             <strong>Fecha de cumplimiento</strong>
           </p-divider>
           <span class="ml-5">
-            {{ agreement().compilanceDate | date : "dd/MM/yyyy" }}
+            {{ agreement().data!.compilanceDate | date : "dd/MM/yyyy" }}
           </span>
         </div>
       </div>
@@ -53,7 +51,7 @@
         <strong>Responsable</strong>
       </p-divider>
       <span class="ml-5">
-        {{ agreement().responsible?.name }}
+        {{ agreement().data!.responsible?.name }}
       </span>
 
       <p-divider align="left" type="solid">
@@ -61,7 +59,7 @@
       </p-divider>
 
       <ul class="mt-0">
-        @for (response of agreement().responses; track response.id) {
+        @for (response of agreement().data!.responses; track response.id) {
         <li [style]="{ 'white-space': 'pre-line' }">
           {{ response.content }}
         </li>
@@ -71,24 +69,24 @@
   </ng-template>
 
   <ng-template #footer>
-    <div class="flex gap-5 justify-content-center">
+    <div class="flex gap-2 justify-content-center">
       <p-button
         icon="pi pi-arrow-left"
         label="Atrás"
         type="button"
         [text]="true"
-        (onClick)="hide()"
+        (onClick)="hideDialog()"
       />
 
-      @if (!agreement().completed && agreement().state) {
+      @if (!agreement().data!.completed && agreement().data!.state) {
       <p-button
+        severity="success"
         icon="pi pi-pencil"
         label="Editar"
         type="button"
-        *ngIf=""
         [text]="true"
+        (onClick)="showFormDialog()"
       />
-      <!-- (onClick)="showForm()" -->
 
       <p-button
         icon="pi pi-file-edit"
@@ -97,8 +95,8 @@
         [text]="true"
         (onClick)="showResponseDialog()"
       />
-      } @if(!agreement().completed && agreement().state &&
-      agreement().responses!.length > 0){
+
+      @if(agreement().data!.responses!.length > 0){
       <p-button
         icon="pi pi-check"
         label="Marcar como cumplido"
@@ -107,13 +105,14 @@
         [text]="true"
         (onClick)="setCompleted()"
       />
-      } @if (!agreement().completed && agreement().state) {
+      }
+
       <p-button
         icon="pi pi-ban"
         label="Anular"
         severity="danger"
         type="button"
-        (onClick)="cancel()"
+        (onClick)="setCancelled()"
         [text]="true"
       />
       }
@@ -122,14 +121,16 @@
 
   <!-- <p-confirmDialog /> -->
 </p-dialog>
-}@else if(responseDialogVisible){
-<app-response-form [agreement]="agreement()" (onHide)="hideResponseDialog()" />
+} }@else if(responseDialogVisible){
+<app-response-form
+  [agreement]="agreement().data!"
+  (onHide)="hideResponseDialog()"
+  (onUpdate)="reloadInfo($event)"
+/>
+}@else if (formDialogVisible) {
+<app-agreement-form
+  [agreement]="agreement().data!"
+  (onUpdate)="reloadInfo($event)"
+  (onHide)="hideForm()"
+/>
 }
-
-<!-- <app-agreement-form
-  *ngIf="formDialog"
-  [agreement]="agreement"
-  [meeting]="agreement.meeting!"
-  (onSubmit)="reloadInfo($event)"
-  (onHide)="hideForm($event)"
-/> -->

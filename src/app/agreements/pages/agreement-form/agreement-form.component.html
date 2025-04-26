@@ -3,7 +3,8 @@
   [style]="{ width: '50rem' }"
   [modal]="true"
   [draggable]="false"
-  (onHide)="hide()"
+  (onHide)="hideDialog()"
+  (onShow)="disableMainPageScroll()"
 >
   <!-- <pre>
   {{ agreementForm.value | json }}
@@ -73,6 +74,11 @@
                 >Fecha de cumplimiento:
               </label>
               <p-datepicker
+                [class]="
+                  submitted && (compilanceDate.errors || isDateBefore())
+                    ? 'ng-invalid ng-dirty'
+                    : ''
+                "
                 styleClass="w-full"
                 [iconDisplay]="'input'"
                 [showIcon]="true"
@@ -83,8 +89,7 @@
                 [readonlyInput]="true"
                 aria-describedby="compilanceDate-help"
               />
-              <!-- [touchUI]="true" -->
-              @if (submitted&&compilanceDate.errors) {
+              @if (submitted && (compilanceDate.errors || isDateBefore())) {
               <small id="compilanceDate-help" class="text-red-500 mt-1 ml-1">{{
                 compilanceDateErrorMsg
               }}</small>
@@ -103,7 +108,7 @@
         label="Cancelar"
         icon="pi pi-times"
         [text]="true"
-        (onClick)="hide()"
+        (onClick)="hideDialog()"
       />
 
       <p-button

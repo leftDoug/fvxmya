@@ -193,16 +193,17 @@
                           >Inicio:
                         </label>
                       </div>
+                      <!-- XXX datepicker para k ocupe todo el espacio -->
                       <div class="flex flex-column col py-0">
                         <p-iconfield>
                           <p-date-picker
                             inputId="startTime"
                             [iconDisplay]="'input'"
-                            [showIcon]="true"
                             [timeOnly]="true"
                             [readonlyInput]="true"
                             formControlName="startTime"
                             appendTo="body"
+                            styleClass="w-full"
                             aria-describedby="startTime-help"
                           />
                           <p-inputicon
@@ -244,9 +245,9 @@
                             formControlName="endTime"
                             appendTo="body"
                             [iconDisplay]="'input'"
-                            [showIcon]="true"
                             [timeOnly]="true"
                             [readonlyInput]="true"
+                            styleClass="w-full"
                             aria-describedby="endTime-help"
                           />
                           <p-inputicon

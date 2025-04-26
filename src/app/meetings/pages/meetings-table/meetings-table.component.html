@@ -76,11 +76,11 @@
         <p-columnFilter field="session" matchMode="equals" [showMenu]="false">
           <ng-template pTemplate="filter" let-value let-filter="filterCallback">
             <p-select
-              appendTo="body"
               [ngModel]="value"
               [options]="sessions"
               (onChange)="filter($event.value)"
               placeholder="Todas"
+              appendTo="body"
             />
           </ng-template>
         </p-columnFilter>
@@ -159,20 +159,3 @@
   (onHide)="hideFormDialog()"
 />
 }
-
-<!-- <p-dialog
-  [(visible)]="formVisible"
-  [style]="{ width: '50rem' }"
-  header="Crear Reunión"
-  [modal]="true"
-  styleClass="p-fluid"
-  [draggable]="false"
-  (onHide)="hideDialog()"
->
-  <app-meeting-form
-    *ngIf="formVisible"
-    [organization]="organization"
-    [typeOfMeeting]="typeOfMeeting"
-    (onSave)="reloadTable($event)"
-  />
-</p-dialog> -->

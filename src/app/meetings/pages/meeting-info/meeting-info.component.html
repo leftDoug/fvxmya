@@ -27,12 +27,15 @@
       <div class="flex flex-column justify-content-center">
         <p-toolbar>
           <ng-template #start>
+            @if (meeting()?.status?.toLowerCase()===status.CLOSED.toLowerCase())
+            {
             <p-button
               label="Exportar Acta"
               severity="info"
               icon="pi pi-file-export"
               [text]="true"
             />
+            }
           </ng-template>
 
           <ng-template #end>

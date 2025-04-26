@@ -17,6 +17,7 @@
 <div class="">
   <p-toolbar>
     <ng-template #start>
+      @if (meeting().status?.toLowerCase()!==completed.toLowerCase()) {
       <p-button
         label="Agregar"
         severity="success"
@@ -24,6 +25,7 @@
         [text]="true"
         (onClick)="showFormDialog()"
       />
+      }
     </ng-template>
 
     <ng-template #end>
@@ -155,8 +157,9 @@
               <!-- [ngModel]="value" -->
               <p-select
                 [options]="statuses"
+                [ngModel]="value"
                 (onChange)="filter($event.value)"
-                placeholder="Seleccione"
+                placeholder="Todos"
                 appendTo="body"
               >
                 <ng-template let-option #item>
@@ -179,16 +182,16 @@
           {{ agreement.content }}
         </td>
         <td>
-          {{ agreement.responsible.name }}
+          {{ agreement.responsible }}
         </td>
         <td>
-          {{ agreement.meeting.name }}
+          {{ agreement.meeting }}
         </td>
         <td>
           <!-- FIXME arreglar el status en el .ts -->
           <p-tag
-            [severity]="getSeverityFromAgreement(agreement)"
-            [value]="getStatus(agreement)"
+            [severity]="getSeverity(agreement.status)"
+            [value]="agreement.status"
           />
         </td>
         <td>
@@ -197,7 +200,7 @@
             severity="info"
             [text]="true"
             [rounded]="true"
-            (onClick)="showInfoDialog(agreement)"
+            (onClick)="showInfoDialog(agreement.id)"
           />
           <!-- [routerLink]="['/acuerdos/detalles/', agreement.id]" -->
         </td>
@@ -225,15 +228,12 @@
 <!-- </div> -->
 
 @if (infoDialogVisible) {
-<app-agreement-info
-  [agreement]="selectedAgreement!"
-  (onHide)="hideInfoDialog()"
-/>
+<app-agreement-info [id]="selectedAgreementId!" (onHide)="hideInfoDialog()" />
 } @if (formDialogVisible) {
 <app-agreement-form
   [meeting]="meeting()"
-  [agreement]="selectedAgreement"
-  (onHide)="hideForm()"
+  [id]="selectedAgreementId"
+  (onHide)="hideFormDialog()"
 />
 }
 

@@ -8,6 +8,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { Agreement } from '@app/agreements/interfaces';
+import { AgreementsService } from '@app/agreements/services/agreements.service';
 import { getSeverity, getStatus } from '@app/shared/severity-status';
 import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
@@ -29,15 +30,16 @@ import { TextareaModule } from 'primeng/textarea';
 })
 export class ResponseFormComponent {
   private readonly fb = inject(NonNullableFormBuilder);
+  private readonly agreementsService = inject(AgreementsService);
+  agreement = input.required<Agreement>();
 
   responseForm: FormGroup;
 
   visible: boolean = true;
   submitted: boolean = false;
 
-  agreement = input.required<Agreement>();
+  onUpdate = output<Agreement>();
   onHide = output<void>();
-  onShow = output<void>();
 
   constructor() {
     this.responseForm = this.fb.group({
@@ -67,11 +69,27 @@ export class ResponseFormComponent {
     return getSeverity(status);
   }
 
-  hide() {
+  hideDialog(agr?: Agreement) {
+    if (agr) {
+      this.onUpdate.emit(agr);
+    }
     this.onHide.emit();
   }
 
-  save() {}
+  save() {
+    if (this.responseForm.valid) {
+      this.agreementsService
+        .addResponse({
+          idAgreement: this.agreement().id,
+          content: this.responseContent.value,
+        })
+        .subscribe((agr) => {
+          if (agr) {
+            this.hideDialog(agr);
+          }
+        });
+    }
+  }
 
   disableMainPageScroll() {
     document.body.classList.add('p-overflow-hidden');

@@ -40,14 +40,14 @@ export class ValidatorService {
     };
   }
 
-  compareMeetingAndCompilance(m: string, c: string) {
+  compareMeetingAndCompilance(meetDate: Date, agrDate: string) {
     return (formGroup: AbstractControl): ValidationErrors | null => {
-      const meeting: Date = new Date(formGroup.get(m)?.value);
-      const compilance: Date = new Date(formGroup.get(c)?.value);
+      // const meeting: Date = new Date(formGroup.get(m)?.value);
+      const compilance: Date = new Date(formGroup.get(agrDate)!.value);
 
-      if (meeting.getTime() > compilance.getTime()) {
-        if (!formGroup.get(c)?.errors) {
-          formGroup.get(c)?.setErrors({ meetingCompilanceError: true });
+      if (meetDate.getTime() > compilance.getTime()) {
+        if (!formGroup.get(agrDate)!.errors) {
+          formGroup.get(agrDate)!.setErrors({ meetingCompilanceError: true });
         }
 
         return {
@@ -55,8 +55,10 @@ export class ValidatorService {
         };
       } else {
         formGroup
-          .get(c)
-          ?.setErrors(!formGroup.get(c)?.value ? { required: true } : null);
+          .get(agrDate)!
+          .setErrors(
+            !formGroup.get(agrDate)!.value ? { required: true } : null
+          );
       }
 
       return null;

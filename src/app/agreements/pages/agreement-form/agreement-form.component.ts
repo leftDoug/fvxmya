@@ -1,12 +1,4 @@
-import {
-  Component,
-  EventEmitter,
-  inject,
-  input,
-  OnInit,
-  output,
-  Output,
-} from '@angular/core';
+import { Component, inject, input, OnInit, output } from '@angular/core';
 import {
   AbstractControl,
   FormGroup,
@@ -15,6 +7,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { User } from '@app/auth/interfaces/user.interface';
+import { MeetingsService } from '@app/meetings/services/meetings.service';
 import { ValidatorService } from '@app/shared/services/validator.service';
 import { ButtonModule } from 'primeng/button';
 import { DatePickerModule } from 'primeng/datepicker';
@@ -42,19 +35,20 @@ export class AgreementFormComponent implements OnInit {
   private readonly fb = inject(NonNullableFormBuilder);
   private readonly validatorsService = inject(ValidatorService);
   private readonly agreementsService = inject(AgreementsService);
+  private readonly meetingsService = inject(MeetingsService);
+  meeting = input<Meeting>();
+  agreement = input<Agreement>();
 
   agreementForm: FormGroup;
   newAgreement!: Agreement;
   workers: User[] = [];
+  meetingDate!: Date;
 
   submitted: boolean = false;
   visible: boolean = true;
 
-  meeting = input.required<Meeting>();
-  agreement = input<Agreement>();
-
   onHide = output<void>();
-  @Output() onSubmit = new EventEmitter<boolean>();
+  onUpdate = output<Agreement>();
 
   constructor() {
     this.agreementForm = this.fb.group(
@@ -62,29 +56,38 @@ export class AgreementFormComponent implements OnInit {
         content: ['', [Validators.required, Validators.minLength(10)]],
         compilanceDate: [new Date(), Validators.required],
         responsible: ['', Validators.required],
-      },
-      {
-        validators: [
-          this.validatorsService.compareMeetingAndCompilance(
-            'meetingDate',
-            'compilanceDate'
-          ),
-        ],
       }
+      // {
+      //   validators: [
+      //     this.validatorsService.compareMeetingAndCompilance(
+      //       'meetingDate',
+      //       'compilanceDate'
+      //     ),
+      //   ],
+      // }
     );
   }
 
   ngOnInit(): void {
-    this.workers = this.meeting().participants as User[];
+    if (this.meeting()) {
+      this.workers = this.meeting()!.participants as User[];
+      this.meetingDate = new Date(this.meeting()!.date!);
+    }
 
     if (this.agreement()) {
       this.agreementForm.patchValue({
         content: this.agreement()?.content,
-        compilanceDate: this.agreement()?.compilanceDate,
+        compilanceDate: new Date(this.agreement()?.compilanceDate!),
         responsible: this.agreement()?.responsible?.id,
       });
       this.agreementContent.disable();
       this.responsible.disable();
+      this.meetingsService
+        .getInfo(this.agreement()!.meeting!.id)
+        .subscribe((meet) => {
+          this.workers = meet?.participants!;
+          this.meetingDate = new Date(meet?.date!);
+        });
     }
     // this.meetingsService
     //   .getInfo(this.meeting.id)
@@ -222,13 +225,7 @@ export class AgreementFormComponent implements OnInit {
   get compilanceDateErrorMsg(): string {
     this.compilanceDate.markAsDirty();
 
-    if (this.agreementForm.get('compilanceDate')?.errors!['required']) {
-      return 'La fecha de cumplimiento es requerida';
-    } else if (
-      this.agreementForm.get('compilanceDate')?.errors![
-        'meetingCompilanceError'
-      ]
-    ) {
+    if (this.isDateBefore()) {
       return 'La fecha de cumplimiento no puede ser anterior a la de la reunión';
     }
     return '';
@@ -254,121 +251,62 @@ export class AgreementFormComponent implements OnInit {
     return '';
   }
 
-  // create(): void {
-  //   this.newAgreement.idMeeting = this.agreementForm.get('meeting')?.value;
-  //   this.newAgreement.idResponsible =
-  //     this.agreementForm.get('responsible')?.value;
-  //   this.newAgreement.completed = this.agreementForm.get('completed')?.value;
-  //   this.newAgreement.content = this.agreementForm.get('content')?.value;
-  //   this.newAgreement.compilanceDate =
-  //     this.agreementForm.get('compilanceDate')?.value;
-
-  //   if (!this.newAgreement.id) {
-  //     this.generateId();
-
-  //     this.agreementsService.add(this.newAgreement).subscribe(console.log);
-
-  //     this.newAgreement.id = '';
-  //     this.newAgreement.number = this.newAgreement.number + 1;
-
-  //     // FIXME: esta dando palo aqui xk no se vuelven a crear las fechas en el reset
-  //     this.agreementForm.reset({
-  //       answer: '',
-  //       completed: false,
-  //       content: '',
-  //       compilanceDate: this.newAgreement.compilanceDate,
-  //       meeting: this.newAgreement.idMeeting,
-  //       // meetingDate: this.agreementForm.get('meetingDate')?.value,
-  //       responsible: this.newAgreement.idResponsible,
-  //     });
-
-  //     this.messageService.add({
-  //       severity: 'success',
-  //       summary: 'Acuerdo Creado',
-  //       detail: 'El acuerdo ha sido creado.',
-  //     });
-  //   } else {
-  //     this.agreementsService.update(this.newAgreement).subscribe(console.log);
-
-  //     this.messageService.add({
-  //       severity: 'success',
-  //       summary: 'Acuerdo Actualizado',
-  //       detail: 'El acuerdo ha sido actualizado.',
-  //     });
-
-  //     this.agreementForm.reset(this.agreementForm.value);
-  //   }
-  // }
-
-  // generateId(): void {
-  //   this.newAgreement.id =
-  //     this.newAgreement.idMeeting! + this.newAgreement.number;
-  // }
-
-  validate(control: string): boolean {
-    if (
-      control === 'content' &&
-      this.agreementForm.get(control)?.pristine &&
-      this.agreementForm.get(control)?.touched &&
-      this.agreementForm.get(control)?.errors!['required']
-    ) {
-      this.agreementForm.controls[control].markAsDirty();
-    }
-
-    return (
-      this.agreementForm.get(control)?.errors! &&
-      this.agreementForm.controls[control].touched
-    );
+  isDateBefore() {
+    return this.compilanceDate.value.getTime() < this.meetingDate.getTime();
   }
+
+  // validate(control: string): boolean {
+  //   if (
+  //     control === 'content' &&
+  //     this.agreementForm.get(control)?.pristine &&
+  //     this.agreementForm.get(control)?.touched &&
+  //     this.agreementForm.get(control)?.errors!['required']
+  //   ) {
+  //     this.agreementForm.controls[control].markAsDirty();
+  //   }
+
+  //   return (
+  //     this.agreementForm.get(control)?.errors! &&
+  //     this.agreementForm.controls[control].touched
+  //   );
+  // }
 
   save(): void {
     this.submitted = true;
 
-    // if (this.agreementForm.valid) {
-    //   if (!this.agreement) {
-    //     this.newAgreement = {
-    //       id: '',
-    //       content: this.content.value.trim(),
-    //       idMeeting: this.meeting.id,
-    //       idResponsible: this.responsible.value,
-    //       compilanceDate: this.compilanceDate.value,
-    //     };
+    if (this.agreementForm.valid && !this.isDateBefore()) {
+      this.newAgreement = {
+        id: this.agreement()?.id || '',
+        content: this.agreementContent.value.trim(),
+        idMeeting: this.meeting()?.id || this.agreement()?.meeting?.id,
+        idResponsible: this.responsible.value,
+        compilanceDate: this.compilanceDate.value,
+      };
 
-    //     this.agreementsService.add(this.newAgreement).subscribe((resp) => {
-    //       this.messageService.add(getNotification(resp.msg!, resp.ok));
-
-    //       if (resp.ok) {
-    //         this.onSubmit.emit(true);
-
-    //         this.agreementForm.reset();
-
-    //         this.hideDialog();
-    //       }
-    //     });
-    //   } else {
-    //     this.newAgreement = {
-    //       id: this.agreement ? this.agreement.id : '',
-    //       content: this.agreement.content,
-    //       idMeeting: this.agreement.meeting!.id,
-    //       idResponsible: this.agreement.responsible!.id,
-    //       compilanceDate: this.compilanceDate.value,
-    //     };
-    //     this.agreementsService.update(this.newAgreement).subscribe((resp) => {
-    //       this.messageService.add(getNotification(resp.msg!, resp.ok));
-
-    //       if (resp.ok) {
-    //         this.onSubmit.emit(true);
-
-    //         this.agreementForm.reset();
-
-    //         this.hideDialog();
-    //       }
-    //     });
-    //   }
-    // }
+      if (!this.agreement()) {
+        this.agreementsService.add(this.newAgreement).subscribe((ok) => {
+          if (ok) {
+            this.hideDialog();
+          }
+        });
+      } else {
+        this.agreementsService.update(this.newAgreement).subscribe((agr) => {
+          if (agr) {
+            this.hideDialog(agr);
+          }
+        });
+      }
+    }
   }
 
-  hide() {
+  hideDialog(agr?: Agreement) {
+    if (agr) {
+      this.onUpdate.emit(agr);
+    }
     this.onHide.emit();
+  }
+
+  disableMainPageScroll() {
+    document.body.classList.add('p-overflow-hidden');
   }
 }

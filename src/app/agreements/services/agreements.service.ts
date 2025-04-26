@@ -6,7 +6,7 @@ import {
 import { inject, Injectable, signal } from '@angular/core';
 import { baseUrl } from '@app/environment/environment.development';
 import { NotificatorService } from '@app/services/notificator.service';
-import { catchError, Observable, of } from 'rxjs';
+import { catchError, Observable, of, switchMap } from 'rxjs';
 import { Agreement, AgreementResponse } from '../interfaces';
 
 @Injectable({
@@ -16,7 +16,7 @@ export class AgreementsService {
   private readonly http = inject(HttpClient);
   private readonly notificatorService = inject(NotificatorService);
   private readonly serverUrl: string = `${baseUrl}/agreements`;
-  private state = signal({ agreements: new Map<number, Agreement>() });
+  private state = signal({ agreements: new Map<string, Agreement>() });
 
   constructor() {}
 
@@ -88,32 +88,153 @@ export class AgreementsService {
       .pipe(catchError((err: HttpErrorResponse) => of(err.error)));
   }
 
-  add(agreement: Agreement): Observable<AgreementResponse> {
-    return this.http
-      .post<AgreementResponse>(`${this.serverUrl}`, agreement)
-      .pipe(catchError((err: HttpErrorResponse) => of(err.error)));
+  getInfo(id: string) {
+    return this.state().agreements.get(id);
   }
+
+  add(agreement: Agreement): Observable<boolean> {
+    return this.http.post<AgreementResponse>(this.serverUrl, agreement).pipe(
+      switchMap((resp) => {
+        const a: Agreement = resp.data as Agreement;
+        console.log('AGREEMENT:', a);
+        this.state().agreements.set(a.id, a);
+        this.state.set({ agreements: this.state().agreements });
+        this.notificatorService.notificate({
+          severity: 'success',
+          summary: 'AGREGADO',
+          detail: resp.message,
+        });
+        return of(true);
+      }),
+      catchError((err: HttpErrorResponse) => {
+        this.notificatorService.notificate({
+          severity: 'error',
+          summary: 'ERROR',
+          detail: err.error.message,
+        });
+        return of(false);
+      })
+    );
+  }
+
+  update(agr: Agreement): Observable<Agreement | undefined> {
+    return this.http
+      .patch<AgreementResponse>(`${this.serverUrl}/${agr.id}`, agr)
+      .pipe(
+        switchMap((resp) => {
+          const agr: Agreement = resp.data as Agreement;
+          this.state().agreements.set(agr.id, agr);
+          this.state.set({ agreements: this.state().agreements });
+          this.notificatorService.notificate({
+            severity: 'success',
+            summary: 'ACTUALIZADO',
+            detail: resp.message,
+          });
+          return of(agr);
+        }),
+        catchError((err: HttpErrorResponse) => {
+          this.notificatorService.notificate({
+            severity: 'error',
+            summary: 'ERROR',
+            detail: err.error.message,
+          });
+          return of(undefined);
+        })
+      );
+  }
+
+  // add(agreement: Agreement): Observable<AgreementResponse> {
+  //   return this.http
+  //     .post<AgreementResponse>(`${this.serverUrl}`, agreement)
+  //     .pipe(catchError((err: HttpErrorResponse) => of(err.error)));
+  // }
 
   addResponse(response: {
     idAgreement: string;
     content: string;
-  }): Observable<AgreementResponse> {
+  }): Observable<Agreement | undefined> {
     return this.http
-      .post<AgreementResponse>(`${this.serverUrl}/responses`, response)
-      .pipe(catchError((err: HttpErrorResponse) => of(err.error)));
+      .post<AgreementResponse>(`${baseUrl}/responses`, response)
+      .pipe(
+        switchMap((resp) => {
+          const a: Agreement = resp.data as Agreement;
+          this.state().agreements.set(a.id, a);
+          this.state.set({ agreements: this.state().agreements });
+          this.notificatorService.notificate({
+            severity: 'success',
+            summary: 'ACTUALIZADO',
+            detail: resp.message,
+          });
+          return of(a);
+        }),
+        catchError((err: HttpErrorResponse) => {
+          this.notificatorService.notificate({
+            severity: 'error',
+            summary: 'ERROR',
+            detail: err.error.message,
+          });
+          return of(undefined);
+        })
+      );
   }
 
-  update(agreement: Agreement): Observable<AgreementResponse> {
-    return this.http
-      .patch<AgreementResponse>(`${this.serverUrl}/${agreement.id}`, {
-        compilanceDate: agreement.compilanceDate,
-      })
-      .pipe(catchError((err: HttpErrorResponse) => of(err.error)));
-  }
+  // update(agreement: Agreement): Observable<AgreementResponse> {
+  //   return this.http
+  //     .patch<AgreementResponse>(`${this.serverUrl}/${agreement.id}`, {
+  //       compilanceDate: agreement.compilanceDate,
+  //     })
+  //     .pipe(catchError((err: HttpErrorResponse) => of(err.error)));
+  // }
 
-  setCompleted(id: string): Observable<AgreementResponse> {
-    return this.http
+  setCompleted(id: string): void {
+    this.http
       .patch<AgreementResponse>(`${this.serverUrl}/complete/${id}`, null)
-      .pipe(catchError((err: HttpErrorResponse) => of(err.error)));
+      .subscribe({
+        next: (resp) => {
+          const agr: Agreement = this.state().agreements.get(id)!;
+          agr.completed = true;
+
+          this.state().agreements.set(agr.id, agr);
+          this.state.set({ agreements: this.state().agreements });
+          this.notificatorService.notificate({
+            severity: 'success',
+            summary: 'ACTUALIZADO',
+            detail: resp.message,
+          });
+        },
+        error: (err: HttpErrorResponse) => {
+          this.notificatorService.notificate({
+            severity: 'error',
+            summary: 'ERROR',
+            detail: err.error.message,
+          });
+        },
+      });
+  }
+
+  setCancelled(id: string): void {
+    this.http
+      .patch<AgreementResponse>(`${this.serverUrl}/cancel/${id}`, null)
+      .subscribe({
+        next: (resp) => {
+          const agr: Agreement = this.state().agreements.get(id)!;
+          agr.state = false;
+
+          this.state().agreements.set(agr.id, agr);
+          this.state.set({ agreements: this.state().agreements });
+          this.notificatorService.notificate({
+            severity: 'info',
+            summary: 'ANULADO',
+            detail: resp.message,
+          });
+        },
+        error: (err: HttpErrorResponse) => {
+          this.notificatorService.notificate({
+            severity: 'error',
+            summary: 'ERROR',
+            detail: err.error.message,
+          });
+        },
+      });
   }
 }

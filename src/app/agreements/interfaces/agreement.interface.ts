@@ -3,7 +3,7 @@ import { Meeting } from '@app/meetings/interfaces/meeting.interface';
 import { Response } from '@app/responses/interfaces';
 
 export interface Agreement {
-  id: number;
+  id: string;
   number?: number;
   content: string;
   state?: boolean;
@@ -18,6 +18,7 @@ export interface Agreement {
 }
 
 export interface AgreementResponse {
+  ok: boolean;
   data?: Agreement | Agreement[];
   message?: string;
 }

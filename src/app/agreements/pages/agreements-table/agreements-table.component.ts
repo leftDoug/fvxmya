@@ -8,9 +8,15 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { Agreement, Status } from '@app/agreements/interfaces';
+import {
+  Agreement,
+  Status as StatusAgreement,
+} from '@app/agreements/interfaces';
 import { User } from '@app/auth/interfaces/user.interface';
-import { Meeting } from '@app/meetings/interfaces/meeting.interface';
+import {
+  Meeting,
+  Status as StatusMeeting,
+} from '@app/meetings/interfaces/meeting.interface';
 import { ButtonModule } from 'primeng/button';
 import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
@@ -44,73 +50,79 @@ import { AgreementInfoComponent } from '../agreement-info/agreement-info.compone
 export class AgreementsTableComponent implements OnInit {
   private readonly agreementsService = inject(AgreementsService);
   private readonly router = inject(Router);
+  meeting = input.required<Meeting>();
+
   agreements = computed(() =>
     this.agreementsService
       .getAllFormatted()
       .filter((a) => a.meeting?.id === this.meeting().id)
+      .sort((a, b) => a.number! - b.number!)
+      .map((a2) => ({
+        id: a2.id,
+        number: a2.number,
+        content: a2.content,
+        responsible: a2.responsible?.name,
+        meeting: a2.meeting?.name,
+        status: this.getStatus(a2),
+      }))
   );
-  selectedAgreement: Agreement | undefined;
-  // meeting!: Meeting;
-  // meetings: Meeting[] = [];
-  status = Status;
+  selectedAgreementId?: string;
+  status = StatusAgreement;
   statuses = [
-    Status.FULFILLED,
-    Status.IN_PROCESS,
-    Status.UNFULFILLED,
-    Status.CANCELLED,
+    StatusAgreement.FULFILLED,
+    StatusAgreement.IN_PROCESS,
+    StatusAgreement.UNFULFILLED,
+    StatusAgreement.CANCELLED,
   ];
-  // today: Date = new Date();
   workers!: User[];
+  fulfilled = computed(() => {
+    let amount = 0;
+    this.agreements().forEach((a) => {
+      if (a.status.toLowerCase() === StatusAgreement.FULFILLED.toLowerCase()) {
+        amount++;
+      }
+    });
+    return amount;
+  });
+  unfulfilled = computed(() => {
+    let amount = 0;
+    this.agreements().forEach((a) => {
+      if (
+        a.status.toLowerCase() === StatusAgreement.UNFULFILLED.toLowerCase()
+      ) {
+        amount++;
+      }
+    });
+    return amount;
+  });
+  inProcess = computed(() => {
+    let amount = 0;
+    this.agreements().forEach((a) => {
+      if (a.status.toLowerCase() === StatusAgreement.IN_PROCESS.toLowerCase()) {
+        amount++;
+      }
+    });
+    return amount;
+  });
+  cancelled = computed(() => {
+    let amount = 0;
+    this.agreements().forEach((a) => {
+      if (a.status.toLowerCase() === StatusAgreement.CANCELLED.toLowerCase()) {
+        amount++;
+      }
+    });
+    return amount;
+  });
+  completed = StatusMeeting.CLOSED;
   // role!: string;
   // user!: UserLogged;
   // directorArea: boolean = false;
   // worker!: testWorker;
-  meeting = input.required<Meeting>();
 
   // idAgreement: string = '';
+
   formDialogVisible: boolean = false;
   loading: boolean = true;
-
-  fulfilled = computed(() => {
-    let amount = 0;
-    this.agreements().forEach((a) => {
-      if (this.getStatus(a) === Status.FULFILLED) {
-        amount++;
-      }
-    });
-    return amount;
-  });
-
-  unfulfilled = computed(() => {
-    let amount = 0;
-    this.agreements().forEach((a) => {
-      if (this.getStatus(a) === Status.UNFULFILLED) {
-        amount++;
-      }
-    });
-    return amount;
-  });
-
-  inProcess = computed(() => {
-    let amount = 0;
-    this.agreements().forEach((a) => {
-      if (this.getStatus(a) === Status.IN_PROCESS) {
-        amount++;
-      }
-    });
-    return amount;
-  });
-
-  cancelled = computed(() => {
-    let amount = 0;
-    this.agreements().forEach((a) => {
-      if (this.getStatus(a) === Status.CANCELLED) {
-        amount++;
-      }
-    });
-    return amount;
-  });
-
   infoDialogVisible: boolean = false;
 
   onGoBack = output<void>();
@@ -342,19 +354,19 @@ export class AgreementsTableComponent implements OnInit {
   //   return amount;
   // }
 
-  getStatus(agreement: Agreement): Status {
+  getStatus(agreement: Agreement): StatusAgreement {
     const date: Date = new Date(agreement.compilanceDate);
     // const date: Date = new Date(agreement.compilanceDate);
     const today: Date = new Date();
 
     if (agreement.completed) {
-      return Status.FULFILLED;
+      return StatusAgreement.FULFILLED;
     } else if (!agreement.state) {
-      return Status.CANCELLED;
+      return StatusAgreement.CANCELLED;
     } else if (today.getTime() < date.getTime()) {
-      return Status.IN_PROCESS;
+      return StatusAgreement.IN_PROCESS;
     } else {
-      return Status.UNFULFILLED;
+      return StatusAgreement.UNFULFILLED;
     }
   }
 
@@ -366,15 +378,15 @@ export class AgreementsTableComponent implements OnInit {
   //   return this.meetings.find((meeting) => meeting.id === id)?.name!;
   // }
 
-  getSeverity(status: Status) {
+  getSeverity(status: StatusAgreement) {
     switch (status) {
-      case Status.CANCELLED:
+      case StatusAgreement.CANCELLED:
         return 'secondary';
-      case Status.FULFILLED:
+      case StatusAgreement.FULFILLED:
         return 'success';
-      case Status.IN_PROCESS:
+      case StatusAgreement.IN_PROCESS:
         return 'info';
-      case Status.UNFULFILLED:
+      case StatusAgreement.UNFULFILLED:
         return 'danger';
       default:
         return 'warn';
@@ -411,7 +423,7 @@ export class AgreementsTableComponent implements OnInit {
   //   }
   // }
 
-  hideForm() {
+  hideFormDialog() {
     this.formDialogVisible = false;
   }
 
@@ -420,13 +432,13 @@ export class AgreementsTableComponent implements OnInit {
     // this.router.navigateByUrl(`reuniones/info/${this.meeting().id}`);
   }
 
-  showInfoDialog(agreement: Agreement) {
-    this.selectedAgreement = agreement;
+  showInfoDialog(id: string) {
+    this.selectedAgreementId = id;
     this.infoDialogVisible = true;
   }
 
   hideInfoDialog() {
-    this.selectedAgreement = undefined;
+    this.selectedAgreementId = undefined;
     this.infoDialogVisible = false;
   }
 }

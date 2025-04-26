@@ -3,7 +3,7 @@
   [style]="{ width: '50rem' }"
   [modal]="true"
   [draggable]="false"
-  (onHide)="hide()"
+  (onHide)="hideDialog()"
   (onShow)="disableMainPageScroll()"
 >
   <ng-template #header>
@@ -52,7 +52,7 @@
         label="Cancelar"
         icon="pi pi-times"
         [text]="true"
-        (onClick)="hide()"
+        (onClick)="hideDialog()"
       />
 
       <p-button
