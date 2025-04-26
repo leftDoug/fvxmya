@@ -72,6 +72,7 @@ export class MeetingFormComponent implements OnInit {
   newMeeting!: Meeting;
   sessions: Session[] = [Session.ORDINARY, Session.EXTRAORDINARY];
   organization?: Organization;
+  availableSecretaries: User[] = [];
   sourceMembers = signal<User[]>([]);
   sourceWorkers = signal<User[]>([]);
   sourceTopics = signal<Topic[]>([]);
@@ -111,6 +112,7 @@ export class MeetingFormComponent implements OnInit {
       .subscribe((org) => {
         if (org) {
           this.organization = org;
+          this.availableSecretaries = [org.leader!, ...org.members!];
         }
       });
 

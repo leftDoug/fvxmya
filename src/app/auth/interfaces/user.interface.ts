@@ -1,6 +1,7 @@
 export interface User {
   id: string;
   name?: string;
+  occupation?: string;
   member?: boolean;
   status?: string;
 }
@@ -11,7 +12,7 @@ export interface UserResponse {
 }
 
 export enum Status {
-  ABSENT = 'ausente',
-  PRESENT = 'presente',
-  PENDENT = 'pendiente',
+  ABSENT = 'AUSENTE',
+  PRESENT = 'PRESENTE',
+  PENDENT = 'PENDIENTE',
 }
