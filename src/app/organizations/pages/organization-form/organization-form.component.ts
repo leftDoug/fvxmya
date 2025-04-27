@@ -1,3 +1,4 @@
+import { NgIf } from '@angular/common';
 import {
   Component,
   computed,
@@ -13,7 +14,6 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { NgIf } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 
 import { ButtonModule } from 'primeng/button';
@@ -24,11 +24,11 @@ import { SelectModule } from 'primeng/select';
 import { StepperModule } from 'primeng/stepper';
 import { ToastModule } from 'primeng/toast';
 
-import { Organization } from '../../interfaces/organization.interface';
-import { OrganizationsService } from '../../services/organizations.service';
-import { AuthService } from 'src/app/auth/services/auth.service';
 import { User } from '@app/auth/interfaces/user.interface';
 import { NotificatorService } from '@app/services/notificator.service';
+import { AuthService } from 'src/app/auth/services/auth.service';
+import { Organization } from '../../interfaces/organization.interface';
+import { OrganizationsService } from '../../services/organizations.service';
 
 @Component({
   selector: 'app-organization-form',
@@ -80,7 +80,7 @@ export class OrganizationFormComponent implements OnInit {
       idLeader: '',
     };
 
-    this.authService.getAllWorkers();
+    this.authService.getAll();
   }
 
   ngOnInit(): void {

@@ -103,7 +103,7 @@ export class MeetingFormComponent implements OnInit {
         ],
       }
     );
-    this.authService.getAllWorkers();
+    this.authService.getAll();
   }
 
   ngOnInit(): void {

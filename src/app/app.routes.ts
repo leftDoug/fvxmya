@@ -98,6 +98,19 @@ export const routes: Routes = [
     ],
   },
   {
+    path: 'usuarios',
+    children: [
+      {
+        path: '',
+        title: 'Usuarios',
+        loadComponent: () =>
+          import('./auth/pages/admin-table/admin-table.component').then(
+            (c) => c.AdminTableComponent
+          ),
+      },
+    ],
+  },
+  {
     path: 'prueba',
     component: PruebaComponent,
   },

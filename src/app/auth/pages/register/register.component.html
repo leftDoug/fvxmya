@@ -1,0 +1,192 @@
+<p-dialog
+  [(visible)]="visible"
+  [style]="{ width: '450px' }"
+  [header]="user() ? 'Actualizar Usuario' : 'Registrar Usuario'"
+  [modal]="true"
+  [draggable]="false"
+  [autofocus]="false"
+  (onHide)="hideDialog()"
+>
+  <ng-template #content>
+    <form [formGroup]="userForm" class="form">
+      <div class="flex flex-column">
+        <div class="flex flex-column">
+          <label for="name">Nombre:</label>
+
+          <input
+            pInputText
+            id="name"
+            pKeyFilter="alpha"
+            formControlName="name"
+            placeholder="Nombre y apellidos..."
+            aria-describedby="name-help"
+          />
+
+          @if (name.errors && submitted) {
+          <small id="name-help" class="text-red-500 mt-1 ml-1">
+            {{ nameErrorMsg }}.
+          </small>
+          }
+        </div>
+
+        <div class="flex flex-column mt-3">
+          <label for="username">Nombre de Usuario:</label>
+
+          <input
+            pInputText
+            id="username"
+            pKeyFilter="alphanum"
+            formControlName="username"
+            placeholder="Nombre de Usuario..."
+            aria-describedby="username-help"
+          />
+
+          @if (username.errors && submitted) {
+          <small id="username-help" class="text-red-500 mt-1 ml-1">
+            {{ usernameErrorMsg }}
+          </small>
+          }
+        </div>
+
+        <div class="flex flex-column mt-3">
+          <label for="occupation">Ocupación:</label>
+
+          <input
+            pInputText
+            id="occupation"
+            pKeyFilter="alpha"
+            formControlName="occupation"
+            placeholder="Nombre de Usuario..."
+            aria-describedby="username-help"
+          />
+
+          @if (occupation.errors && submitted) {
+          <small id="occupation-help" class="text-red-500 mt-1 ml-1">
+            {{ occupationErrorMsg }}
+          </small>
+          }
+        </div>
+
+        <div class="flex flex-column mt-3">
+          <label for="area">Área:</label>
+
+          <input
+            pInputText
+            id="area"
+            pKeyFilter="alpha"
+            formControlName="area"
+            placeholder="Área..."
+            aria-describedby="area-help"
+          />
+
+          @if (area.errors && submitted) {
+          <small id="area-help" class="text-red-500 mt-1 ml-1">
+            {{ areaErrorMsg }}
+          </small>
+          }
+        </div>
+
+        <div class="flex flex-column mt-3">
+          <label for="role">Rol:</label>
+
+          <p-select
+            inputId="role"
+            formControlName="role"
+            [options]="roles"
+            placeholder="-- Seleccione --"
+            appendTo="body"
+            aria-describedby="role-help"
+          />
+
+          @if (role.errors && submitted) {
+          <small id="role-help" class="text-red-500 mt-1 ml-1">
+            {{ roleErrorMsg }}
+          </small>
+          }
+        </div>
+
+        @if(pwdMode()){
+        <div class="flex flex-column mt-3">
+          <label for="oldPassword">Contraseña anterior:</label>
+
+          <p-password
+            inputId="oldPassword"
+            formControlName="oldPassword"
+            [toggleMask]="true"
+            [feedback]="false"
+            styleClass="w-full"
+            [inputStyle]="{ width: '100%' }"
+            aria-describedby="oldPassword-help"
+          />
+
+          @if (oldPassword.errors && submitted) {
+          <small id="oldPassword-help" class="text-red-500 mt-1 ml-1">
+            {{ oldPasswordErrorMsg }}.
+          </small>
+          }
+        </div>
+        } @if (pwdMode()||!user()) {
+        <div class="flex flex-column mt-3">
+          <label for="password">Contraseña:</label>
+
+          <p-password
+            inputId="password"
+            formControlName="password"
+            [toggleMask]="true"
+            [feedback]="false"
+            styleClass="w-full"
+            [inputStyle]="{ width: '100%' }"
+            aria-describedby="password-help"
+          />
+
+          @if (password.errors && submitted) {
+          <small id="password-help" class="text-red-500 mt-1 ml-1">
+            {{ passwordErrorMsg }}.
+          </small>
+          }
+        </div>
+
+        <div class="flex flex-column mt-3">
+          <label for="checkPassword">Confirmar contraseña:</label>
+
+          <p-password
+            inputId="checkPassword"
+            formControlName="checkPassword"
+            [toggleMask]="true"
+            [feedback]="false"
+            styleClass="w-full"
+            [inputStyle]="{ width: '100%' }"
+            aria-describedby="checkPassword-help"
+          />
+
+          @if (checkPassword.errors && submitted) {
+          <small id="checkPassword-help" class="text-red-500 mt-1 ml-1">
+            {{ checkPasswordErrorMsg }}.
+          </small>
+          }
+        </div>
+        }
+      </div>
+    </form>
+  </ng-template>
+
+  <ng-template #footer>
+    <div class="flex justify-content-end">
+      <p-button
+        class="mr-2"
+        label="Cancelar"
+        [text]="true"
+        icon="pi pi-times"
+        (onClick)="hideDialog()"
+      />
+
+      <p-button
+        label="Guardar"
+        severity="success"
+        icon="pi pi-user-plus"
+        [text]="true"
+        (onClick)="save()"
+      />
+    </div>
+  </ng-template>
+</p-dialog>

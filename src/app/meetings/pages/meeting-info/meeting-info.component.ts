@@ -248,7 +248,7 @@ export class MeetingInfoComponent implements OnInit {
     }
 
     const data = {
-      reunion: this.meeting()?.name,
+      reunion: this.meeting()?.name.toUpperCase(),
       organizacion: this.organization.name,
       fecha: `${date.getDate().toString().padStart(2, '0')}/${(
         date.getMonth() + 1
@@ -273,24 +273,6 @@ export class MeetingInfoComponent implements OnInit {
         nombre: m?.name,
         cargo: m?.occupation,
       })),
-      //  [
-      // {
-      //   nombre: this.organization.leader?.name,
-      //   cargo: this.organization.leader?.occupation,
-      // },
-      // this.organization.leader?.id !== this.meeting()?.secretary?.id && {
-      //   nombre: this.meeting()?.secretary?.name,
-      //   cargo: this.meeting()?.secretary?.occupation,
-      // },
-      // // [
-      // ...this.meeting()!
-      //   .participants!.filter((p) => p.member)
-      //   .map((p2) => ({
-      //     nombre: p2.name,
-      //     cargo: p2.occupation,
-      //   })),
-      // // ],
-      // ],
       miembros_ausentes: this.meeting()!
         .participants!.filter(
           (p) =>
