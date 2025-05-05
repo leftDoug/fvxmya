@@ -1,20 +1,21 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { inject, Injectable, signal } from '@angular/core';
 // import { environment } from 'src/environments/environment.development';
+import { catchError, Observable, of, switchMap } from 'rxjs';
 import {
   TypeOfMeeting,
+  TypeOfMeetingCreate,
   TypeOfMeetingResponse,
 } from '../interfaces/type-of-meeting.interface';
-import { Observable, catchError, map, of, switchMap } from 'rxjs';
 // import { Meeting } from 'src/app/meetings/interfaces/meeting.interface';
 // import { AgendaResponse } from 'src/app/agenda/interfaces/agenda-response.interface';
 // import { MeetingResponse } from 'src/app/meetings/interfaces/meeting-response.interface';
-import { baseUrl } from '@app/environment/environment.development';
-import { NotificatorService } from '@app/services/notificator.service';
 import {
   Agenda,
   AgendaResponse,
 } from '@app/agendas/interfaces/agenda.interface';
+import { baseUrl } from '@app/environment/environment.development';
+import { NotificatorService } from '@app/services/notificator.service';
 
 @Injectable({
   providedIn: 'root',
@@ -29,7 +30,7 @@ export class TypesOfMeetingsService {
 
   constructor() {}
 
-  getAllFormated(): TypeOfMeeting[] {
+  getAllFormatted(): TypeOfMeeting[] {
     return Array.from(this.state().typesOfMeetings.values());
   }
 
@@ -184,6 +185,33 @@ export class TypesOfMeetingsService {
           return of([]);
         })
       );
+  }
+
+  create(tom: TypeOfMeetingCreate): Observable<boolean> {
+    return this.http.post<TypeOfMeetingResponse>(this.serverUrl, tom).pipe(
+      switchMap((resp) => {
+        const tom: TypeOfMeeting = resp.data as TypeOfMeeting;
+
+        this.state().typesOfMeetings.set(tom.id, tom);
+        this.state.set({ typesOfMeetings: this.state().typesOfMeetings });
+        this.notificatorService.notificate({
+          severity: 'success',
+          summary: 'AGREGADO',
+          detail: resp.message,
+        });
+
+        return of(true);
+      }),
+      catchError((err: HttpErrorResponse) => {
+        this.notificatorService.notificate({
+          severity: 'error',
+          summary: 'ERROR',
+          detail: err.error.message,
+        });
+
+        return of(false);
+      })
+    );
   }
 
   // add(typeOfMeeting: TypeOfMeeting): Observable<ToMResponse> {

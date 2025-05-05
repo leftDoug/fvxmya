@@ -3,27 +3,18 @@ import {
   Component,
   computed,
   inject,
-  signal,
-  Signal,
-  viewChild,
 } from '@angular/core';
-import { OrganizationsService } from '../../services/organizations.service';
+import { RouterLink } from '@angular/router';
 import { Organization } from '@app/organizations/interfaces/organization.interface';
-import { TableModule } from 'primeng/table';
-import { MessageService } from 'primeng/api';
+import { ConfirmRemoveComponent } from '@app/shared/confirm-remove/confirm-remove.component';
 import { ButtonModule } from 'primeng/button';
-import { InputTextModule } from 'primeng/inputtext';
-import { IconFieldModule } from 'primeng/iconfield';
-import { InputIconModule } from 'primeng/inputicon';
 import { CardModule } from 'primeng/card';
 import { DialogModule } from 'primeng/dialog';
-import { ConfirmRemoveComponent } from '@app/shared/confirm-remove/confirm-remove.component';
-import {
-  ActivatedRoute,
-  Router,
-  RouterLink,
-  RouterLinkActive,
-} from '@angular/router';
+import { IconFieldModule } from 'primeng/iconfield';
+import { InputIconModule } from 'primeng/inputicon';
+import { InputTextModule } from 'primeng/inputtext';
+import { TableModule } from 'primeng/table';
+import { OrganizationsService } from '../../services/organizations.service';
 import { OrganizationFormComponent } from '../organization-form/organization-form.component';
 
 @Component({
@@ -60,7 +51,7 @@ export class OrganizationsTableComponent {
   removeEntityEvent: Event | null = null;
 
   constructor() {
-    this.organizationsService.getAllSignal();
+    this.organizationsService.getAllFrom();
   }
 
   showRemoveConfirmation(event: Event, id: number, name: string) {

@@ -1,29 +1,20 @@
-import {
-  Component,
-  EventEmitter,
-  inject,
-  input,
-  Input,
-  OnInit,
-  output,
-  Output,
-} from '@angular/core';
+import { NgIf } from '@angular/common';
+import { Component, inject, input, OnInit, output } from '@angular/core';
 import {
   AbstractControl,
-  FormBuilder,
   FormGroup,
   NonNullableFormBuilder,
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { TypeOfMeeting } from '../../interfaces/type-of-meeting.interface';
-import { MessageService } from 'primeng/api';
-import { TypesOfMeetingsService } from '../../services/types-of-meetings.service';
-import { Organization } from 'src/app/organizations/interfaces/organization.interface';
-import { DialogModule } from 'primeng/dialog';
-import { NgIf } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
+import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
+import {
+  TypeOfMeeting,
+  TypeOfMeetingCreate,
+} from '../../interfaces/type-of-meeting.interface';
+import { TypesOfMeetingsService } from '../../services/types-of-meetings.service';
 
 @Component({
   selector: 'app-typeOfMeeting-form',
@@ -43,25 +34,19 @@ export class TypeOfMeetingFormComponent implements OnInit {
 
   tomForm: FormGroup;
 
-  newToM: TypeOfMeeting;
+  newTom!: TypeOfMeetingCreate | TypeOfMeeting;
 
   submitted: boolean = false;
   visible: boolean = true;
 
   typeOfMeeting = input<TypeOfMeeting | null>(null);
-  idOrganization = input<number>();
-  onHide = output<boolean>();
+  idOrganization = input.required<number>();
+  onHide = output<void>();
 
   constructor() {
     this.tomForm = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(5)]],
     });
-
-    this.newToM = {
-      id: 0,
-      name: '',
-      idOrganization: 0,
-    };
   }
 
   ngOnInit(): void {
@@ -98,12 +83,17 @@ export class TypeOfMeetingFormComponent implements OnInit {
     this.submitted = true;
 
     if (this.tomForm.valid) {
-      this.newToM = {
-        id: this.typeOfMeeting()?.id || 0,
-        name: this.name.value.trim(),
+      this.newTom = {
+        name: this.name.value.trim() as string,
         idOrganization:
-          this.idOrganization() || this.typeOfMeeting()?.idOrganization,
+          this.typeOfMeeting()?.idOrganization || this.idOrganization(),
       };
+
+      if (!this.typeOfMeeting()) {
+        this.tomsService
+          .create(this.newTom)
+          .subscribe((ok) => ok && this.hideDialog());
+      }
 
       // if (!this.id.value) {
       //   this.tomsService.add(this.newToM).subscribe((resp) => {
@@ -140,7 +130,7 @@ export class TypeOfMeetingFormComponent implements OnInit {
   }
 
   hideDialog() {
-    this.visible = false;
-    this.onHide.emit(true);
+    // this.visible = false;
+    this.onHide.emit();
   }
 }

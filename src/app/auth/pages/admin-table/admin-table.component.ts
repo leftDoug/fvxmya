@@ -1,4 +1,5 @@
 import { Component, computed, inject, OnInit } from '@angular/core';
+import { UserService } from '@app/shared/services/user.service';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { IconFieldModule } from 'primeng/iconfield';
@@ -27,15 +28,16 @@ import { RegisterComponent } from '../register/register.component';
 })
 export class AdminTableComponent implements OnInit {
   private readonly authService = inject(AuthService);
+  private readonly userService = inject(UserService);
 
-  users = computed(() => this.authService.getAllFormatted());
+  users = computed(() => this.userService.getAllUsersFormatted());
   selectdUser?: User;
 
   formDialogVisible: boolean = false;
   infoDialogVisible: boolean = false;
 
   constructor() {
-    this.authService.getAll();
+    this.userService.getAllUsers();
   }
 
   ngOnInit(): void {}
@@ -73,10 +75,10 @@ export class AdminTableComponent implements OnInit {
   }
 
   lock(id: string): void {
-    this.authService.setLocked(id);
+    this.userService.lock(id);
   }
 
   unlock(id: string): void {
-    this.authService.setUnlocked(id);
+    this.userService.unlock(id);
   }
 }

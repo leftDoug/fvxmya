@@ -1,276 +1,351 @@
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { inject, Injectable, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import { baseUrl } from '@app/environment/environment.development';
+import {
+  LoginCredentials,
+  LoginResponse,
+  PasswordChangeRequest,
+  TokenResponse,
+} from '@app/models';
 import { NotificatorService } from '@app/services/notificator.service';
+import { TokenService } from '@app/shared/services/token.service';
 import { JwtHelperService } from '@auth0/angular-jwt';
-import { catchError, Observable, of, switchMap } from 'rxjs';
-import { User, UserResponse } from '../interfaces/user.interface';
+import { catchError, Observable, of, switchMap, tap, throwError } from 'rxjs';
+import { Role, UserInfo } from '../interfaces/user.interface';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
   private readonly http = inject(HttpClient);
-  private readonly serverUrl = baseUrl + '/auth';
+  private readonly serverUrl = `${baseUrl}/auth`;
   private readonly notificatorService = inject(NotificatorService);
+  private readonly tokenService = inject(TokenService);
+  private readonly router = inject(Router);
   private jwtHelper = new JwtHelperService();
-  private state = signal({ users: new Map<string, User>() });
-  private users = signal<Map<string, User>>(new Map());
-  private userId?: string;
+  // private state = signal({ users: new Map<string, User>() });
+  // private users = signal<Map<string, User>>(new Map());
+  private currentUser = signal<UserInfo | null>(null);
+  private isAuthenticated = signal<boolean>(false);
+  private isRefreshing = false;
+  // private userIsAuthenticated = signal<boolean>(false);
 
-  constructor() {}
-
-  getAllFormatted(): User[] {
-    return Array.from(this.users().values());
+  constructor() {
+    if (
+      this.tokenService.getAuthToken() &&
+      this.tokenService.isAuthenticated()
+    ) {
+      this.loadCurrentUser();
+    }
   }
 
-  getAllWorkersFormatted(): User[] {
-    return Array.from(this.state().users.values());
-  }
+  // TODO borrar
+  // getAllFormatted(): User[] {
+  //   return Array.from(this.users().values());
+  // }
 
-  getAll(): void {
-    this.http.get<UserResponse>(`${this.serverUrl}/users`).subscribe({
-      next: (resp) => {
-        const usrs: User[] = resp.data as User[];
+  // getAllWorkersFormatted(): User[] {
+  //   return Array.from(this.state().users.values());
+  // }
 
-        this.users.update((currentUsers) => {
-          const newMap = new Map(currentUsers);
+  // getAll(): void {
+  //   this.http.get<UserResponse>(`${this.serverUrl}/users`).subscribe({
+  //     next: (resp) => {
+  //       const usrs: User[] = resp.data as User[];
 
-          usrs.forEach((usr) => newMap.set(usr.id, usr));
+  //       this.users.update((currentUsers) => {
+  //         const newMap = new Map(currentUsers);
 
-          return newMap;
-        });
+  //         usrs.forEach((usr) => newMap.set(usr.id, usr));
 
-        // of(users).subscribe((usrs) => {
-        //   usrs.forEach((usr) => {
-        //     this.state().users.set(usr.id, usr);
-        //   });
+  //         return newMap;
+  //       });
+  //     },
+  //   });
+  // }
 
-        //   this.state.set({ users: this.state().users });
-        // });
-      },
-      error: (err: HttpErrorResponse) => {
-        this.notificatorService.notificate({
-          severity: 'error',
-          summary: 'ERROR',
-          detail: err.error.message,
-        });
-      },
-    });
-  }
+  // getAllWorkers(): void {
+  //   this.http.get<UserResponse>(`${this.serverUrl}/workers`).subscribe({
+  //     next: (resp: UserResponse) => {
+  //       const workers: UserWorker[] = resp.data as User[];
 
-  getAllWorkers() {
-    this.http.get<UserResponse>(`${this.serverUrl}/workers`).subscribe({
-      next: (resp: UserResponse) => {
-        const workers: User[] = resp.data as User[];
-        // of(workers).subscribe((result) => {
-        workers.forEach((u) => {
-          this.state().users.set(u.id, u);
-        });
-        // });
-        this.state.set({ users: this.state().users });
-      },
-      error: (err: HttpErrorResponse) => {
-        this.notificatorService.notificate({
-          severity: 'error',
-          summary: 'ERROR',
-          detail: err.message,
-        });
-      },
-    });
-  }
+  //       this.users.update((currentUsers) => {
+  //         const newMap = new Map(currentUsers);
 
-  getMembersFrom(id: number): Observable<User[] | []> {
+  //         workers.forEach((wkr) => newMap.set(wkr.id, wkr));
+
+  //         return newMap;
+  //       });
+  //     },
+  //   });
+  // }
+
+  // getMembersFrom(id: number): Observable<User[] | []> {
+  //   return this.http
+  //     .get<UserResponse>(`${this.serverUrl}/organization/${id}`)
+  //     .pipe(
+  //       switchMap((resp: UserResponse) => {
+  //         return of(resp.data as User[]);
+  //       }),
+  //       catchError((err: HttpErrorResponse) => {
+  //         this.notificatorService.notificate({
+  //           severity: 'error',
+  //           summary: 'ERROR',
+  //           detail: err.message,
+  //         });
+  //         return of([]);
+  //       })
+  //     );
+  // }
+
+  changePassword(passwords: PasswordChangeRequest): Observable<boolean> {
     return this.http
-      .get<UserResponse>(`${this.serverUrl}/organization/${id}`)
-      .pipe(
-        switchMap((resp: UserResponse) => {
-          return of(resp.data as User[]);
-        }),
-        catchError((err: HttpErrorResponse) => {
-          this.notificatorService.notificate({
-            severity: 'error',
-            summary: 'ERROR',
-            detail: err.message,
-          });
-          return of([]);
-        })
-      );
-  }
-
-  register(user: User): Observable<boolean> {
-    return this.http
-      .post<UserResponse>(`${this.serverUrl}/register`, user)
+      .post<TokenResponse>(`${this.serverUrl}/change-password`, passwords)
       .pipe(
         switchMap((resp) => {
-          const usr: User = resp.data as User;
-
-          this.users.update((currentUsers) => {
-            return new Map(currentUsers).set(usr.id, usr);
-          });
-
-          this.notificatorService.notificate({
-            severity: 'success',
-            summary: 'AGREGADO',
-            detail: resp.message,
-          });
-
-          return of(true);
-        }),
-        catchError((err: HttpErrorResponse) => {
-          this.notificatorService.notificate({
-            severity: 'error',
-            summary: 'ERROR',
-            detail: err.error.message,
-          });
-
-          return of(false);
-        })
-      );
-  }
-
-  update(user: User): Observable<boolean> {
-    return this.http
-      .patch<UserResponse>(`${this.serverUrl}/users/${user.id}`, user)
-      .pipe(
-        switchMap((resp) => {
-          const usr: User = resp.data as User;
-
-          this.users.update((currentUsers) => {
-            return new Map(currentUsers).set(usr.id, usr);
-          });
-
           this.notificatorService.notificate({
             severity: 'success',
             summary: 'ACTUALIZADO',
             detail: resp.message,
           });
 
-          return of(true);
-        }),
-        catchError((err: HttpErrorResponse) => {
-          this.notificatorService.notificate({
-            severity: 'error',
-            summary: 'ERROR',
-            detail: err.error.message,
-          });
+          const authToken = resp.authToken as string;
+          const newRefreshToken = resp.refreshToken as string;
 
-          return of(false);
+          this.tokenService.saveTokens(authToken, newRefreshToken);
+
+          this.loadCurrentUser();
+
+          return of(true);
         })
       );
   }
 
-  changePassword(passwords: any): Observable<boolean> {
-    const id = this.getUserId();
-
-    if (id) {
-      return this.http
-        .patch<UserResponse>(
-          `${this.serverUrl}/change-password/${id}`,
-          passwords
-        )
-        .pipe(
-          switchMap((resp) => {
-            this.notificatorService.notificate({
-              severity: 'success',
-              summary: 'ACTUALIZADO',
-              detail: resp.message,
-            });
-
-            return of(true);
-          }),
-          catchError((err: HttpErrorResponse) => {
-            this.notificatorService.notificate({
-              severity: 'error',
-              summary: 'ERROR',
-              detail: err.error.message,
-            });
-
-            return of(false);
-          })
-        );
-    }
-
-    this.notificatorService.notificate({
-      severity: 'error',
-      summary: 'ERROR',
-      detail: 'La sesión ha expirado',
-    });
-
-    return of(false);
-  }
-
-  getUserId(): string | null {
-    if (this.userId) {
-      return this.userId;
-    }
-
+  loadCurrentUser(): void {
     const token = localStorage.getItem('auth-token');
 
     if (token) {
-      return this.jwtHelper.decodeToken(token);
+      this.currentUser.set(this.jwtHelper.decodeToken(token));
+    } else {
+      this.currentUser.set(null);
+    }
+  }
+
+  getCurrentUserId(): string | undefined {
+    return this.currentUser()?.id;
+  }
+
+  getCurrentUserUsername(): string | undefined {
+    return this.currentUser()?.username;
+  }
+
+  isAdmin(): boolean {
+    return this.currentUser()?.role === Role.ADMIN;
+  }
+
+  isLeader(): boolean {
+    return this.currentUser()?.role === Role.ORG_LEADER;
+  }
+
+  // updateAuthenticatedStatus(): void {
+  //   this.userIsAuthenticated.set(this.tokenService.isAuthenticated());
+  // }
+
+  // isAuthenticated(): boolean {
+  //   return this.userIsAuthenticated();
+  // }
+
+  checkAuthStaus(): Observable<boolean> {
+    if (!this.tokenService.hasTokens()) {
+      this.isAuthenticated.set(false);
+
+      return of(false);
     }
 
-    return null;
+    if (this.tokenService.isAuthenticated()) {
+      if (!this.getCurrentUserId() || !this.getCurrentUserUsername()) {
+        this.loadCurrentUser();
+      }
+      this.isAuthenticated.set(true);
+
+      return of(true);
+    }
+
+    // evita que se haga refresh 2 veces seguidas
+    // mientras esté así solo se saldrá de la app cuando expire el refresh
+    const refreshToken = this.tokenService.getRefreshToken();
+    const authenticated =
+      !!refreshToken && !this.tokenService.isTokenExpired(refreshToken);
+
+    if (authenticated) {
+      this.isAuthenticated.set(true);
+
+      return of(true);
+    }
+
+    this.isAuthenticated.set(false);
+
+    return of(false);
+    // fin
+
+    // return this.refreshToken().pipe(
+    //   switchMap(() => {
+    //     this.isAuthenticated.set(true);
+
+    //     return of(true);
+    //   }),
+    //   catchError(() => {
+    //     this.isAuthenticated.set(false);
+    //     this.logout();
+
+    //     return of(false);
+    //   })
+    // );
   }
 
-  setLocked(id: string): void {
-    this.http
-      .patch<UserResponse>(`${this.serverUrl}/users/lock/${id}`, null)
-      .subscribe({
-        next: (resp) => {
-          const user = this.users().get(id);
-
-          if (user) {
-            user.state = false;
-            this.users.update((currentUsers) =>
-              new Map(currentUsers).set(user.id, user)
-            );
-          }
-
-          this.notificatorService.notificate({
-            severity: 'info',
-            summary: 'ACTUALIZADO',
-            detail: resp.message,
-          });
-        },
-        error: (err: HttpErrorResponse) => {
-          this.notificatorService.notificate({
-            severity: 'error',
-            summary: 'ERROR',
-            detail: err.error.message,
-          });
-        },
-      });
+  getAuthStatus(): boolean {
+    return this.isAuthenticated();
   }
 
-  setUnlocked(id: string): void {
-    this.http
-      .patch<UserResponse>(`${this.serverUrl}/users/unlock/${id}`, null)
-      .subscribe({
-        next: (resp) => {
-          const user = this.users().get(id);
+  // checkAuthenticated(): Observable<boolean> {
+  //   this.updateAuthenticatedStatus();
 
-          if (user) {
-            user.state = true;
-            this.users.update((currentUsers) =>
-              new Map(currentUsers).set(user.id, user)
-            );
-          }
+  //   const authenticated = this.userIsAuthenticated();
+
+  //   if (authenticated) {
+  //     return of(true);
+  //   }
+
+  //   if (
+  //     this.tokenService.getAuthToken() &&
+  //     this.tokenService.getRefreshToken()
+  //   ) {
+  //     return this.refreshToken().pipe(
+  //       switchMap(() => of(true)),
+  //       catchError(() => of(false))
+  //     );
+  //   }
+
+  //   this.logout();
+
+  //   return of(false);
+  // }
+
+  // isAuthenticated(): boolean {
+  //   return this.userIsAuthenticated();
+  // }
+
+  // isTokenExpired(): boolean {
+  //   const authToken = this.tokenService.getAuthToken();
+
+  //   if (authToken) {
+  //     return this.tokenService.isTokenExpired(authToken);
+  //   }
+
+  //   return true;
+  // }
+
+  login(credentials: LoginCredentials): Observable<boolean> {
+    return this.http
+      .post<LoginResponse>(`${this.serverUrl}/login`, credentials)
+      .pipe(
+        switchMap((resp) => {
+          const authToken = resp.authToken as string;
+          const refreshToken = resp.refreshToken as string;
+
+          this.tokenService.saveTokens(authToken, refreshToken);
+
+          this.loadCurrentUser();
 
           this.notificatorService.notificate({
-            severity: 'info',
-            summary: 'ACTUALIZADO',
+            severity: 'success',
+            summary: 'Sesión iniciada',
             detail: resp.message,
           });
-        },
-        error: (err: HttpErrorResponse) => {
-          this.notificatorService.notificate({
-            severity: 'error',
-            summary: 'ERROR',
-            detail: err.error.message,
-          });
-        },
+
+          return of(true);
+        }),
+        catchError(() => of(false))
+      );
+  }
+
+  logout(): void {
+    const refreshToken = this.tokenService.getRefreshToken();
+
+    this.tokenService.removeTokens();
+
+    this.currentUser.set(null);
+
+    if (refreshToken) {
+      this.http.post<{ message: string }>(`${this.serverUrl}/logout`, {
+        refreshToken,
       });
+    }
+
+    this.router.navigate(['iniciar-sesion']);
+  }
+
+  refreshToken(): Observable<TokenResponse> {
+    if (this.isRefreshing) {
+      if (this.tokenService.getRefreshToken()) {
+        return of({
+          authToken: this.tokenService.getAuthToken()!,
+          refreshToken: this.tokenService.getRefreshToken()!,
+        });
+      }
+
+      return throwError(
+        () => new Error('(SERVICE: Error al actualizar token)')
+      );
+    }
+    this.isRefreshing = false;
+
+    const refreshToken = this.tokenService.getRefreshToken();
+
+    if (!refreshToken) {
+      this.isRefreshing = false;
+
+      this.notificatorService.notificate({
+        severity: 'error',
+        summary: 'ERROR',
+        detail: 'SERVICE: Refresh token no encontrado',
+      });
+
+      this.logout();
+
+      return throwError(
+        () => new Error('SERVICE: Refresh token no encontrado')
+      );
+    }
+
+    if (this.tokenService.isTokenExpired(refreshToken)) {
+      this.isRefreshing = false;
+
+      this.notificatorService.notificate({
+        severity: 'error',
+        summary: 'ERROR',
+        detail: 'SERVICE: Sesión expirada. Vuelva a iniciar sesión',
+      });
+
+      this.logout();
+
+      return throwError(
+        () => new Error('SERVICE: Sesión expirada. Vuelva a iniciar sesión')
+      );
+    }
+
+    return this.http
+      .post<TokenResponse>(`${this.serverUrl}/refresh`, { refreshToken })
+      .pipe(
+        tap((resp) => {
+          this.isRefreshing = false;
+          const authToken = resp.authToken as string;
+          const newRefreshToken = resp.refreshToken as string;
+
+          this.tokenService.saveTokens(authToken, newRefreshToken);
+        }),
+        catchError((err) => throwError(() => err))
+      );
   }
 }

@@ -6,7 +6,6 @@ import {
 import { inject, Injectable, signal } from '@angular/core';
 import { baseUrl } from '@app/environment/environment.development';
 import { NotificatorService } from '@app/services/notificator.service';
-import { Topic, TopicResponse } from '@app/topics/interfaces/topic.interface';
 import { catchError, Observable, of, switchMap } from 'rxjs';
 import { Agenda, AgendaResponse } from '../interfaces/agenda.interface';
 
@@ -29,7 +28,7 @@ export class AgendasService {
   getAllFrom(id: number): void {
     if (!this.tomsRequested.includes(id)) {
       this.http
-        .get<AgendaResponse>(`${this.serverUrl}/type-of-meeting/${id}`)
+        .get<AgendaResponse>(`${this.serverUrl}/type-meeting/${id}`)
         .subscribe({
           next: (resp: AgendaResponse) => {
             const agendas = resp.data as Agenda[];
@@ -41,65 +40,58 @@ export class AgendasService {
             });
             this.tomsRequested.push(id);
           },
-          error: (err: HttpErrorResponse) => {
-            console.error(err.error.message);
-            this.notificatorService.notificate({
-              severity: 'error',
-              summary: 'ERROR',
-              detail: err.error.message,
-            });
-          },
         });
     }
   }
 
-  getTopicsFrom(idTom: number, year: number): Observable<Topic[]> {
+  // TODO probar este
+  getFromTomAndYear(
+    idTom: number,
+    year: number
+  ): Observable<Agenda | undefined> {
     const agenda = this.getAllFormatted().find(
       (a) => a.typeOfMeeting?.id === idTom && a.year === year
     );
 
     if (agenda) {
-      return of(agenda.topics as Topic[]);
+      return of(agenda);
     } else {
       let params = new HttpParams();
       params = params.append('year', year);
+
       return this.http
-        .get<TopicResponse>(`${this.serverUrl}/topics/${idTom}`, { params })
+        .get<AgendaResponse>(
+          `${this.serverUrl}/type-meeting-and-year/${idTom}`,
+          { params }
+        )
         .pipe(
-          switchMap((resp: TopicResponse) => of(resp.data as Topic[])),
-          catchError((err: HttpErrorResponse) => {
-            this.notificatorService.notificate({
-              severity: 'error',
-              summary: 'ERROR',
-              detail: err.error.message,
-            });
-            return of([]);
-          })
+          switchMap((resp) => {
+            const age: Agenda = resp.data as Agenda;
+
+            this.state().agendas.set(age.id, age);
+            this.state.set({ agendas: this.state().agendas });
+
+            return of(age);
+          }),
+          catchError(() => of(undefined))
         );
     }
   }
 
-  getInfo(id: number): Observable<Agenda | undefined> {
+  getById(id: number): Observable<Agenda | undefined> {
     const agenda = this.state().agendas.get(id);
 
     if (agenda) {
       return of(agenda);
     } else {
-      return this.http.get<AgendaResponse>(`${this.serverUrl}/info/${id}`).pipe(
+      return this.http.get<AgendaResponse>(`${this.serverUrl}/${id}`).pipe(
         switchMap((resp: AgendaResponse) => {
           const a: Agenda = resp.data as Agenda;
           this.state().agendas.set(a.id, a);
           this.state.set({ agendas: this.state().agendas });
           return of(a);
         }),
-        catchError((err: HttpErrorResponse) => {
-          this.notificatorService.notificate({
-            severity: 'error',
-            summary: 'ERROR',
-            detail: err.error.message,
-          });
-          return of(undefined);
-        })
+        catchError(() => of(undefined))
       );
     }
   }
@@ -117,14 +109,7 @@ export class AgendasService {
         });
         return of(true);
       }),
-      catchError((err: HttpErrorResponse) => {
-        this.notificatorService.notificate({
-          severity: 'error',
-          summary: 'ERROR',
-          detail: err.error.message,
-        });
-        return of(false);
-      })
+      catchError((err: HttpErrorResponse) => of(false))
     );
   }
 
@@ -143,14 +128,7 @@ export class AgendasService {
           });
           return of(true);
         }),
-        catchError((err: HttpErrorResponse) => {
-          this.notificatorService.notificate({
-            severity: 'error',
-            summary: 'ERROR',
-            detail: err.error.message,
-          });
-          return of(false);
-        })
+        catchError(() => of(false))
       );
   }
 
@@ -163,13 +141,6 @@ export class AgendasService {
             severity: 'info',
             summary: 'ELIMINADO',
             detail: resp.message,
-          });
-        },
-        error: (err: HttpErrorResponse) => {
-          this.notificatorService.notificate({
-            severity: 'error',
-            summary: 'ERROR',
-            detail: err.error.message,
           });
         },
       });

@@ -1,9 +1,9 @@
 export interface User {
   id: string;
-  name?: string;
+  name: string;
   username?: string;
   password?: string;
-  occupation?: string;
+  occupation: string;
   area?: string;
   role?: Role;
   member?: boolean;
@@ -11,8 +11,48 @@ export interface User {
   state?: boolean;
 }
 
+export interface UserState {
+  data: User | undefined;
+  loading: boolean;
+}
+
+export interface WorkerState {
+  data: UserWorker | undefined;
+  loading: boolean;
+}
+
+export interface UserWorker {
+  id: string;
+  name: string;
+  occupation: string;
+  member?: boolean;
+  status?: string;
+}
+
+export interface CreateUser {
+  name: string;
+  username: string;
+  password: string;
+  occupation: string;
+  area: string;
+  role: Role;
+}
+
+export interface UpdateUser {
+  name?: string;
+  occupation?: string;
+  area?: string;
+  role?: Role;
+}
+
+export interface UserInfo {
+  id: string;
+  username: string;
+  role: Role;
+}
+
 export interface UserResponse {
-  data?: User | User[];
+  data?: User | User[] | UserWorker | UserWorker[];
   message?: string;
 }
 

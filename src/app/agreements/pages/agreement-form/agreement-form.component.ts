@@ -83,7 +83,7 @@ export class AgreementFormComponent implements OnInit {
       this.agreementContent.disable();
       this.responsible.disable();
       this.meetingsService
-        .getInfo(this.agreement()!.meeting!.id)
+        .getById(this.agreement()!.meeting!.id)
         .subscribe((meet) => {
           this.workers = meet?.participants!;
           this.meetingDate = new Date(meet?.date!);

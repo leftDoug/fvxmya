@@ -1,7 +1,9 @@
+@if (isAuthenticated()) {
 <app-sidemenu
   [visible]="panelVisible()"
   (onVisibleChange)="panelVisible.set($event)"
 />
+
 <div class="flex flex-column">
   <p-menubar class="p-1 pb-0" [model]="items">
     <ng-template #item let-item let-root="root">
@@ -11,6 +13,8 @@
     </ng-template>
   </p-menubar>
 </div>
+}
+
 <!-- <div class="flex gap-2">
   <p-card class="w-full">
     <div class="flex">

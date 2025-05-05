@@ -111,6 +111,7 @@
 
   @if(formDialogVisible){
   <app-typeOfMeeting-form
+    [idOrganization]="organization().id"
     [typeOfMeeting]="selectedTom"
     (onHide)="hideFormDialog()"
   />

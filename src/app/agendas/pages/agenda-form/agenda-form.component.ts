@@ -95,20 +95,20 @@ export class AgendaFormComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    if (this.route.snapshot.routeConfig?.path?.includes('info')) {
+    if (this.route.snapshot.routeConfig?.path?.includes('detalles')) {
       this.infoMode = true;
     } else {
       this.createMode = true;
     }
 
     if (!this.createMode) {
-      this.agendasService.getInfo(Number(this.id())).subscribe((resp) => {
-        if (resp) {
-          this.newAgenda = resp;
+      this.agendasService.getById(Number(this.id())).subscribe((age) => {
+        if (age) {
+          this.newAgenda = age;
           this.agendaForm.patchValue({
-            year: new Date(resp.year),
+            year: new Date(age.year),
           });
-          const tempTopic: Topic[] = resp.topics!;
+          const tempTopic: Topic[] = age.topics!;
           of(tempTopic).subscribe((result) => {
             result.forEach((t) => {
               this.state().topics.set(t.id, t);

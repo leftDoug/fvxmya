@@ -24,8 +24,9 @@ import { SelectModule } from 'primeng/select';
 import { StepperModule } from 'primeng/stepper';
 import { ToastModule } from 'primeng/toast';
 
-import { User } from '@app/auth/interfaces/user.interface';
+import { Role, User } from '@app/auth/interfaces/user.interface';
 import { NotificatorService } from '@app/services/notificator.service';
+import { UserService } from '@app/shared/services/user.service';
 import { AuthService } from 'src/app/auth/services/auth.service';
 import { Organization } from '../../interfaces/organization.interface';
 import { OrganizationsService } from '../../services/organizations.service';
@@ -54,6 +55,7 @@ export class OrganizationFormComponent implements OnInit {
   private readonly notificatorService = inject(NotificatorService);
   private readonly organizationsService = inject(OrganizationsService);
   private readonly route = inject(ActivatedRoute);
+  private readonly userService = inject(UserService);
 
   visible = true;
   onHide = output<void>();
@@ -62,7 +64,13 @@ export class OrganizationFormComponent implements OnInit {
 
   organization = model<Organization | undefined>(undefined);
   organizationForm: FormGroup;
-  workers = computed(() => this.authService.getAllWorkersFormatted());
+  workers = computed(() => this.userService.getAllWorkersFormatted());
+  leaders = computed(() =>
+    this.userService
+      .getAllUsersFormatted()
+      .filter((usr) => usr.role === Role.ORG_LEADER)
+  );
+  // workers = computed(() => this.authService.getAllWorkersFormatted());
   workersSource: User[] = [];
   workersSelected: User[] = [];
   newOrganization: Organization;
@@ -80,16 +88,18 @@ export class OrganizationFormComponent implements OnInit {
       idLeader: '',
     };
 
-    this.authService.getAll();
+    this.userService.getAllUsers();
+    // this.authService.getAll();
   }
 
   ngOnInit(): void {
+    console.log(this.workers());
     if (this.organization()?.id) {
       if (this.route.snapshot.routeConfig?.path?.includes('info')) {
         this.workersSelected = [...this.organization()!.members!];
       } else {
         this.organizationsService
-          .getInfo(this.organization()!.id)
+          .getById(this.organization()!.id)
           .subscribe((resp) => {
             if (resp) {
               this.organization.set(resp);

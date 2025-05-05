@@ -1,11 +1,11 @@
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { inject, Injectable, signal } from '@angular/core';
+import { NotificatorService } from '@app/services/notificator.service';
 import { catchError, Observable, of, switchMap } from 'rxjs';
 import {
   Organization,
   OrganizationResponse,
 } from '../interfaces/organization.interface';
-import { NotificatorService } from '@app/services/notificator.service';
 
 @Injectable({
   providedIn: 'root',
@@ -22,69 +22,56 @@ export class OrganizationsService {
     return Array.from(this.state().organizations.values());
   }
 
-  getAllSignal(): void {
-    this.http.get<OrganizationResponse>(this.apiUrl).subscribe({
+  // getAllSignal(): void {
+  //   this.http.get<OrganizationResponse>(this.apiUrl).subscribe({
+  //     next: (resp: OrganizationResponse) => {
+  //       const organizations = resp.data as Organization[];
+  //       of(organizations).subscribe((result) => {
+  //         result.forEach((org) => {
+  //           this.state().organizations.set(org.id, org);
+  //         });
+  //         this.state.set({ organizations: this.state().organizations });
+  //       });
+  //     },
+  //     // error: (err: HttpErrorResponse) => {
+  //     //   console.error(err.error.message);
+  //     //   this.notificatorService.notificate({
+  //     //     severity: 'error',
+  //     //     summary: 'ERROR',
+  //     //     detail: err.error.message,
+  //     //   });
+  //     // },
+  //   });
+  // }
+
+  getAllFrom(): void {
+    this.http.get<OrganizationResponse>(`${this.apiUrl}/leader`).subscribe({
       next: (resp: OrganizationResponse) => {
         const organizations = resp.data as Organization[];
+
         of(organizations).subscribe((result) => {
           result.forEach((org) => {
             this.state().organizations.set(org.id, org);
           });
+
           this.state.set({ organizations: this.state().organizations });
-        });
-      },
-      error: (err: HttpErrorResponse) => {
-        console.error(err.error.message);
-        this.notificatorService.notificate({
-          severity: 'error',
-          summary: 'ERROR',
-          detail: err.error.message,
         });
       },
     });
   }
 
-  getAllFromSignal(id: string): void {
-    this.http
-      .get<OrganizationResponse>(`${this.apiUrl}/worker/${id}`)
-      .subscribe({
-        next: (resp: OrganizationResponse) => {
-          const organizations = resp.data as Organization[];
-          of(organizations).subscribe((result) => {
-            result.forEach((org) => {
-              this.state().organizations.set(org.id, org);
-            });
-            this.state.set({ organizations: this.state().organizations });
-          });
-        },
-        error: (err: HttpErrorResponse) => {
-          console.error(err.error.message);
-          this.notificatorService.notificate({
-            severity: 'error',
-            summary: 'ERROR',
-            detail: err.error.message,
-          });
-        },
-      });
-  }
+  getById(id: number): Observable<Organization | undefined> {
+    return this.http.get<OrganizationResponse>(`${this.apiUrl}/${id}`).pipe(
+      switchMap((resp: OrganizationResponse) => {
+        const org: Organization = resp.data as Organization;
 
-  getInfo(id: number): Observable<Organization | undefined> {
-    return this.http
-      .get<OrganizationResponse>(`${this.apiUrl}/info/${id}`)
-      .pipe(
-        switchMap((resp: OrganizationResponse) => {
-          return of(resp.data as Organization);
-        }),
-        catchError((err: HttpErrorResponse) => {
-          console.error(err.error.message);
-          this.notificatorService.notificate({
-            severity: 'error',
-            summary: 'ERROR',
-            detail: err.error.message,
-          });
-          return of(undefined);
-        })
-      );
+        this.state().organizations.set(org.id, org);
+        this.state.set({ organizations: this.state().organizations });
+
+        return of(org);
+      }),
+      catchError(() => of(undefined))
+    );
   }
 
   add(organization: Organization): Observable<boolean> {
@@ -93,24 +80,19 @@ export class OrganizationsService {
       .pipe(
         switchMap((resp) => {
           const organization: Organization = resp.data as Organization;
+
           this.state().organizations.set(organization.id, organization);
           this.state.set({ organizations: this.state().organizations });
+
           this.notificatorService.notificate({
             severity: 'success',
             summary: 'ÉXITO',
             detail: resp.message,
           });
+
           return of(true);
         }),
-        catchError((err: HttpErrorResponse) => {
-          console.error(err.error.message);
-          this.notificatorService.notificate({
-            severity: 'error',
-            summary: 'ERROR',
-            detail: err.error.message,
-          });
-          return of(false);
-        })
+        catchError(() => of(false))
       );
   }
 
@@ -123,24 +105,19 @@ export class OrganizationsService {
       .pipe(
         switchMap((resp) => {
           const organization: Organization = resp.data as Organization;
+
           this.state().organizations.set(organization.id, organization);
           this.state.set({ organizations: this.state().organizations });
+
           this.notificatorService.notificate({
             severity: 'success',
             summary: 'ÉXITO',
             detail: resp.message,
           });
+
           return of(true);
         }),
-        catchError((err: HttpErrorResponse) => {
-          console.error(err.error.message);
-          this.notificatorService.notificate({
-            severity: 'error',
-            summary: 'ERROR',
-            detail: err.error.message,
-          });
-          return of(false);
-        })
+        catchError(() => of(false))
       );
   }
 
@@ -154,17 +131,9 @@ export class OrganizationsService {
             summary: 'INFO',
             detail: resp.message,
           });
+
           this.state().organizations.delete(id);
           this.state.set({ organizations: this.state().organizations });
-        },
-        error: (err: HttpErrorResponse) => {
-          console.error(err.error.message);
-          this.notificatorService.notificate({
-            severity: 'error',
-            summary: 'ERROR',
-            detail: err.error.message,
-          });
-          return of(false);
         },
       });
   }

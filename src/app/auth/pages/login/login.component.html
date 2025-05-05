@@ -1,0 +1,52 @@
+<p-dialog
+  [visible]="true"
+  [draggable]="false"
+  [closable]="false"
+  [modal]="true"
+  header="Iniciar Sesión"
+  [style]="{ width: '25rem', 'min-width': '15rem' }"
+>
+  <ng-template #content>
+    <form class="form" [autocomplete]="false" [formGroup]="credentialsForm">
+      <div class="flex flex-column">
+        <div class="flex flex-column">
+          <label class="ml-1 font-medium" for="username">Usuario</label>
+
+          <input
+            pInputText
+            id="username"
+            formControlName="username"
+            placeholder="usuario"
+          />
+        </div>
+
+        <div class="flex flex-column">
+          <label class="mt-3 ml-1 font-medium" for="password">Contraseña</label>
+
+          <p-password
+            inputId="password"
+            formControlName="password"
+            class="w-full"
+            [style]="{ width: '100%' }"
+            [inputStyle]="{ width: '100%' }"
+            [feedback]="false"
+            styleClass="w-full"
+            [toggleMask]="true"
+            placeholder="contraseña"
+          />
+        </div>
+      </div>
+    </form>
+  </ng-template>
+
+  <ng-template #footer>
+    <p-button
+      label="Iniciar Sesión"
+      severity="success"
+      icon="pi pi-sign-in"
+      [text]="true"
+      [disabled]="credentialsForm.invalid"
+      (onClick)="login()"
+    />
+  </ng-template>
+</p-dialog>

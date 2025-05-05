@@ -52,13 +52,12 @@ export class MeetingsTableComponent implements OnInit {
 
   formDialogVisible: boolean = false;
 
-  constructor() {
-    this.meetingsService.getAll();
-  }
+  constructor() {}
 
   ngOnInit(): void {
+    this.meetingsService.getAllFrom(this.typeOfMeeting().id);
     this.organizationsService
-      .getInfo(this.typeOfMeeting().organization!.id)
+      .getById(this.typeOfMeeting().organization!.id)
       .subscribe((resp) => {
         if (resp) {
           this.organization = resp;

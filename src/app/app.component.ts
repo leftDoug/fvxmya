@@ -1,4 +1,4 @@
-import { Component, effect, inject, signal } from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { MenuItem, MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
@@ -6,6 +6,7 @@ import { CardModule } from 'primeng/card';
 import { InputIconModule } from 'primeng/inputicon';
 import { MenubarModule } from 'primeng/menubar';
 import { ToastModule } from 'primeng/toast';
+import { AuthService } from './auth/services/auth.service';
 import { NotificatorService } from './services/notificator.service';
 import { SidemenuComponent } from './sidemenu/sidemenu.component';
 
@@ -28,8 +29,10 @@ export class AppComponent {
   private readonly notificatorService: NotificatorService =
     inject(NotificatorService);
   private readonly messageService: MessageService = inject(MessageService);
+  private readonly authService = inject(AuthService);
 
   panelVisible = signal<boolean>(false);
+  isAuthenticated = computed(() => this.authService.getAuthStatus());
 
   items: MenuItem[] = [
     {
@@ -47,6 +50,8 @@ export class AppComponent {
         this.notificatorService.clearNotification();
       }
     });
+
+    this.authService.loadCurrentUser();
 
     // effect(() => {
     //   this._organizationsService.getAllFormatted();

@@ -20,6 +20,7 @@ import { MeetingsService } from '@app/meetings/services/meetings.service';
 import { OrganizationsService } from '@app/organizations/services/organizations.service';
 import { NotificatorService } from '@app/services/notificator.service';
 import { LoadingComponent } from '@app/shared/loading/loading.component';
+import { UserService } from '@app/shared/services/user.service';
 import { ValidatorService } from '@app/shared/services/validator.service';
 import { Topic } from '@app/topics/interfaces/topic.interface';
 import { TypeOfMeeting } from '@app/types-of-meetings/interfaces/type-of-meeting.interface';
@@ -64,6 +65,7 @@ export class MeetingFormComponent implements OnInit {
   private readonly validatorService = inject(ValidatorService);
   private readonly meetingsService = inject(MeetingsService);
   private readonly organizationsService = inject(OrganizationsService);
+  private readonly userService = inject(UserService);
 
   meeting = input<Meeting>();
   typeOfMeeting = input.required<TypeOfMeeting>();
@@ -103,12 +105,13 @@ export class MeetingFormComponent implements OnInit {
         ],
       }
     );
-    this.authService.getAll();
+    this.userService.getAllWorkers();
+    // this.authService.getAll();
   }
 
   ngOnInit(): void {
     this.organizationsService
-      .getInfo(this.typeOfMeeting().organization?.id!)
+      .getById(this.typeOfMeeting().organization?.id!)
       .subscribe((org) => {
         if (org) {
           this.organization = org;
@@ -217,7 +220,7 @@ export class MeetingFormComponent implements OnInit {
 
   setAvailableGuests() {
     this.sourceWorkers.set(
-      this.authService
+      this.userService
         .getAllWorkersFormatted()
         .filter(
           (w) =>
@@ -225,6 +228,15 @@ export class MeetingFormComponent implements OnInit {
             !this.organization?.members?.some((m) => m.id === w.id) &&
             !this.targetGuests.some((g) => g.id === w.id)
         )
+
+      // this.authService
+      //   .getAllWorkersFormatted()
+      //   .filter(
+      //     (w) =>
+      //       w.id !== this.organization?.leader?.id &&
+      //       !this.organization?.members?.some((m) => m.id === w.id) &&
+      //       !this.targetGuests.some((g) => g.id === w.id)
+      //   )
     );
   }
 
@@ -315,15 +327,21 @@ export class MeetingFormComponent implements OnInit {
 
   setTopicsList() {
     this.agendasService
-      .getTopicsFrom(
+      .getFromTomAndYear(
         this.typeOfMeeting().id,
         (this.date.value as Date).getFullYear()
       )
-      .subscribe((resp) => {
-        const topics: Topic[] = resp;
-        this.sourceTopics.set(
-          topics.filter((t) => !this.targetTopics.some((t2) => t2.id === t.id))
-        );
+      .subscribe((age) => {
+        if (age) {
+          const topics: Topic[] = age.topics!;
+
+          this.sourceTopics.set(
+            topics.filter(
+              (t) => !this.targetTopics.some((t2) => t2.id === t.id)
+            )
+          );
+        }
+
         this.loadingTopics = false;
       });
   }

@@ -1,22 +1,20 @@
 import { Component, computed, inject, input, OnInit } from '@angular/core';
+import { ConfirmationService, MessageService } from 'primeng/api';
 import { TypeOfMeeting } from '../../interfaces/type-of-meeting.interface';
 import { TypesOfMeetingsService } from '../../services/types-of-meetings.service';
-import { ConfirmationService, MessageService, SelectItem } from 'primeng/api';
-import { OrganizationsService } from 'src/app/organizations/services/organizations.service';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 // import { Agenda } from 'src/app/agenda/interfaces/agenda.interface';
 // import { AgendasService } from 'src/app/agenda/services/agendas.service';
-import { Organization } from 'src/app/organizations/interfaces/organization.interface';
-import { TableModule } from 'primeng/table';
-import { ButtonModule } from 'primeng/button';
 import { Router } from '@angular/router';
+import { ConfirmRemoveComponent } from '@app/shared/confirm-remove/confirm-remove.component';
+import { ButtonModule } from 'primeng/button';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { DividerModule } from 'primeng/divider';
 import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
 import { InputTextModule } from 'primeng/inputtext';
+import { TableModule } from 'primeng/table';
+import { Organization } from 'src/app/organizations/interfaces/organization.interface';
 import { TypeOfMeetingFormComponent } from '../type-of-meeting-form/type-of-meeting-form.component';
-import { ConfirmRemoveComponent } from '@app/shared/confirm-remove/confirm-remove.component';
-import { ConfirmDialogModule } from 'primeng/confirmdialog';
 
 @Component({
   selector: 'app-typesOfMeetings-table',
@@ -43,7 +41,7 @@ export class TypesOfMeetingsTableComponent implements OnInit {
   // FIXME: arrglar k nunca se van a pedir todos los toms, sino getAllFrom
   typesOfMeetings = computed(() => {
     return this.tomsService
-      .getAllFormated()
+      .getAllFormatted()
       .filter((tom) => tom.idOrganization === this.organization().id);
   });
 

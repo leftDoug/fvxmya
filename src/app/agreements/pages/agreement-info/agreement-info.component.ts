@@ -1,14 +1,14 @@
 import { DatePipe, UpperCasePipe } from '@angular/common';
 import {
   Component,
-  computed,
   inject,
   input,
   OnInit,
   output,
+  Signal,
 } from '@angular/core';
 import { FormBuilder } from '@angular/forms';
-import { Agreement } from '@app/agreements/interfaces';
+import { Agreement, AgreementState } from '@app/agreements/interfaces';
 import { ResponseFormComponent } from '@app/responses/components/response-form/response-form.component';
 import { LoadingComponent } from '@app/shared/loading/loading.component';
 import { getSeverity, getStatus } from '@app/shared/severity-status';
@@ -54,19 +54,7 @@ export class AgreementInfoComponent implements OnInit {
   // meeting: string = '';
   // responsible: string = '';
 
-  agreement = computed(() => {
-    if (!this.id()) {
-      return {
-        isLoading: true,
-        data: undefined,
-      };
-    } else {
-      return {
-        isLoading: false,
-        data: this.agreementsService.getInfo(this.id()),
-      };
-    }
-  });
+  agreement!: Signal<AgreementState>;
 
   formDialogVisible: boolean = false;
   responseDialogVisible: boolean = false;
@@ -87,6 +75,7 @@ export class AgreementInfoComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.agreement = this.agreementsService.getById(this.id());
     // this.activatedRoute.params
     //   .pipe(
     //     tap(({ id }) => {
@@ -158,11 +147,11 @@ export class AgreementInfoComponent implements OnInit {
   }
 
   setCompleted() {
-    this.agreementsService.setCompleted(this.agreement().data!.id);
+    this.agreementsService.complete(this.agreement().data!.id);
   }
 
   setCancelled(): void {
-    this.agreementsService.setCancelled(this.agreement().data!.id);
+    this.agreementsService.cancel(this.agreement().data!.id);
   }
 
   hideDialog() {

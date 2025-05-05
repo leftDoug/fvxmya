@@ -7,6 +7,11 @@ export interface TypeOfMeeting {
   idOrganization?: number;
 }
 
+export interface TypeOfMeetingCreate {
+  name: string;
+  idOrganization: number;
+}
+
 export interface TypeOfMeetingResponse {
   data?: TypeOfMeeting | TypeOfMeeting[];
   message?: string;

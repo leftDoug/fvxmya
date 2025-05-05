@@ -6,6 +6,7 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
+import { UserService } from '@app/shared/services/user.service';
 import { ValidatorService } from '@app/shared/services/validator.service';
 import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
@@ -32,6 +33,7 @@ export class RegisterComponent implements OnInit {
   private readonly fb = inject(NonNullableFormBuilder);
   private readonly validatorService = inject(ValidatorService);
   private readonly authService = inject(AuthService);
+  private readonly userService = inject(UserService);
 
   user = input<User>();
   pwdMode = input<boolean>(false);
@@ -53,7 +55,7 @@ export class RegisterComponent implements OnInit {
         username: ['', [Validators.required, Validators.minLength(3)]],
         password: ['', [Validators.required, Validators.minLength(3)]],
         checkPassword: ['', Validators.required],
-        oldPassword: ['', Validators.required],
+        currentPassword: ['', Validators.required],
         area: ['', [Validators.required, Validators.minLength(3)]],
         role: ['', [Validators.required, Validators.minLength(3)]],
       },
@@ -82,8 +84,8 @@ export class RegisterComponent implements OnInit {
     return this.userForm.get('checkPassword')!;
   }
 
-  get oldPassword(): AbstractControl {
-    return this.userForm.get('oldPassword')!;
+  get currentPassword(): AbstractControl {
+    return this.userForm.get('currentPassword')!;
   }
 
   get password(): AbstractControl {
@@ -178,18 +180,18 @@ export class RegisterComponent implements OnInit {
     this.checkPassword.markAsDirty();
 
     if (this.checkPassword.hasError('required')) {
-      return 'La contraseña es requerida';
+      return 'La contraseña de confirmación es requerida';
     } else if (this.checkPassword.hasError('differentPasswords')) {
       return 'Las contraseñas deben ser iguales';
     }
     return '';
   }
 
-  get oldPasswordErrorMsg(): string {
-    this.oldPassword.markAsDirty();
+  get currentPasswordErrorMsg(): string {
+    this.currentPassword.markAsDirty();
 
-    if (this.oldPassword.hasError('required')) {
-      return 'La contraseña anterior es requerida';
+    if (this.currentPassword.hasError('required')) {
+      return 'La contraseña actual es requerida';
     }
     return '';
   }
@@ -200,7 +202,7 @@ export class RegisterComponent implements OnInit {
     if (this.user()) {
       this.password.setErrors(null);
       this.checkPassword.setErrors(null);
-      this.oldPassword.setErrors(null);
+      this.currentPassword.setErrors(null);
     } else if (this.pwdMode()) {
       this.name.setErrors(null);
       this.username.setErrors(null);
@@ -208,7 +210,7 @@ export class RegisterComponent implements OnInit {
       this.area.setErrors(null);
       this.role.setErrors(null);
     } else {
-      this.oldPassword.setErrors(null);
+      this.currentPassword.setErrors(null);
     }
 
     if (this.userForm.valid) {
@@ -223,21 +225,21 @@ export class RegisterComponent implements OnInit {
       };
 
       if (!this.user() && !this.pwdMode()) {
-        this.authService.register(this.newUser).subscribe((ok) => {
+        this.userService.create(this.newUser).subscribe((ok) => {
           if (ok) {
             this.hideDialog();
           }
         });
       } else if (this.user()) {
-        this.authService.update(this.newUser).subscribe((ok) => {
+        this.userService.update(this.newUser).subscribe((ok) => {
           if (ok) {
             this.hideDialog();
           }
         });
       } else {
         const pwds = {
-          oldPwd: this.oldPassword.value,
-          newPwd: this.password.value,
+          currentPassword: this.currentPassword.value,
+          newPassword: this.password.value,
         };
         this.authService.changePassword(pwds).subscribe((ok) => {
           if (ok) {

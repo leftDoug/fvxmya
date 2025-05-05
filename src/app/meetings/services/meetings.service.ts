@@ -27,7 +27,7 @@ export class MeetingsService {
 
   getAllFrom(id: number) {
     this.http
-      .get<MeetingResponse>(`${this.serverUrl}/type-of-meeting/${id}`)
+      .get<MeetingResponse>(`${this.serverUrl}/type-meeting/${id}`)
       .subscribe({
         next: (resp: MeetingResponse) => {
           const meetings: Meeting[] = resp.data as Meeting[];
@@ -38,54 +38,48 @@ export class MeetingsService {
             this.state.set({ meetings: this.state().meetings });
           });
         },
-        error: (err: HttpErrorResponse) => {
-          this.notificatorService.notificate({
-            severity: 'error',
-            summary: 'ERROR',
-            detail: err.error.message,
-          });
-        },
       });
   }
 
-  getAll() {
-    this.http.get<MeetingResponse>(`${this.serverUrl}`).subscribe({
-      next: (resp: MeetingResponse) => {
-        const meetings: Meeting[] = resp.data as Meeting[];
-        of(meetings).subscribe((result) => {
-          result.forEach((m) => {
-            this.state().meetings.set(m.id, m);
-          });
-          this.state.set({ meetings: this.state().meetings });
-        });
-      },
-      error: (err: HttpErrorResponse) => {
-        this.notificatorService.notificate({
-          severity: 'error',
-          summary: 'ERROR',
-          detail: err.error.message,
-        });
-      },
-    });
-  }
+  // TODO borrar
+  // getAll() {
+  //   this.http.get<MeetingResponse>(`${this.serverUrl}`).subscribe({
+  //     next: (resp: MeetingResponse) => {
+  //       const meetings: Meeting[] = resp.data as Meeting[];
+  //       of(meetings).subscribe((result) => {
+  //         result.forEach((m) => {
+  //           this.state().meetings.set(m.id, m);
+  //         });
+  //         this.state.set({ meetings: this.state().meetings });
+  //       });
+  //     },
+  //     error: (err: HttpErrorResponse) => {
+  //       this.notificatorService.notificate({
+  //         severity: 'error',
+  //         summary: 'ERROR',
+  //         detail: err.error.message,
+  //       });
+  //     },
+  //   });
+  // }
 
-  getById(id: string): Observable<MeetingResponse> {
-    return this.http
-      .get<MeetingResponse>(`${this.serverUrl}/${id}`)
-      .pipe(catchError((err: HttpErrorResponse) => of(err.error)));
-  }
+  // getById(id: string): Observable<MeetingResponse> {
+  //   return this.http
+  //     .get<MeetingResponse>(`${this.serverUrl}/${id}`)
+  //     .pipe(catchError((err: HttpErrorResponse) => of(err.error)));
+  // }
 
-  getInfo(id: number): Observable<Meeting | undefined> {
+  getById(id: number): Observable<Meeting | undefined> {
     return this.http.get<MeetingResponse>(`${this.serverUrl}/info/${id}`).pipe(
-      switchMap((resp: MeetingResponse) => of(resp.data as Meeting)),
-      catchError((err: HttpErrorResponse) => {
-        this.notificatorService.notificate({
-          severity: 'error',
-          summary: 'ERROR',
-          detail: err.error.message,
-        });
-        return of(undefined);
-      })
+      switchMap((resp: MeetingResponse) => {
+        const meet: Meeting = resp.data as Meeting;
+
+        this.state().meetings.set(meet.id, meet);
+        this.state.set({ meetings: this.state().meetings });
+
+        return of(meet);
+      }),
+      catchError(() => of(undefined))
     );
   }
 
@@ -99,23 +93,19 @@ export class MeetingsService {
     return this.http.post<MeetingResponse>(this.serverUrl, meeting).pipe(
       switchMap((resp) => {
         const m: Meeting = resp.data as Meeting;
+
         this.state().meetings.set(m.id, m);
         this.state.set({ meetings: this.state().meetings });
+
         this.notificatorService.notificate({
           severity: 'success',
           summary: 'AGREGADO',
           detail: resp.message,
         });
+
         return of(resp.ok);
       }),
-      catchError((err: HttpErrorResponse) => {
-        this.notificatorService.notificate({
-          severity: 'error',
-          summary: 'ERROR',
-          detail: err.error.message,
-        });
-        return of(false);
-      })
+      catchError(() => of(false))
     );
   }
 
@@ -125,23 +115,19 @@ export class MeetingsService {
       .pipe(
         switchMap((resp) => {
           const m: Meeting = resp.data as Meeting;
+
           this.state().meetings.set(m.id, m);
           this.state.set({ meetings: this.state().meetings });
+
           this.notificatorService.notificate({
             severity: 'success',
             summary: 'ACTUALIZADO',
             detail: resp.message,
           });
+
           return of(m);
         }),
-        catchError((err: HttpErrorResponse) => {
-          this.notificatorService.notificate({
-            severity: 'error',
-            summary: 'ERROR',
-            detail: err.error.message,
-          });
-          return of(undefined);
-        })
+        catchError(() => of(undefined))
       );
   }
 
@@ -163,6 +149,7 @@ export class MeetingsService {
 
           this.state().meetings.set(meet.id, meet);
           this.state.set({ meetings: this.state().meetings });
+
           this.notificatorService.notificate({
             severity: 'success',
             summary: 'ACTUALIZADO',
@@ -171,18 +158,11 @@ export class MeetingsService {
 
           return of(meet);
         }),
-        catchError((err: HttpErrorResponse) => {
-          this.notificatorService.notificate({
-            severity: 'error',
-            summary: 'ERROR',
-            detail: err.error.message,
-          });
-          return of(undefined);
-        })
+        catchError(() => of(undefined))
       );
   }
 
-  setOpen(id: number): Observable<Meeting | undefined> {
+  open(id: number): Observable<Meeting | undefined> {
     return this.http
       .patch<MeetingResponse>(`${this.serverUrl}/open/${id}`, null)
       .pipe(
@@ -192,6 +172,7 @@ export class MeetingsService {
 
           this.state().meetings.set(meet.id, meet);
           this.state.set({ meetings: this.state().meetings });
+
           this.notificatorService.notificate({
             severity: 'success',
             summary: 'ACTUALIZADO',
@@ -200,18 +181,11 @@ export class MeetingsService {
 
           return of(meet);
         }),
-        catchError((err: HttpErrorResponse) => {
-          this.notificatorService.notificate({
-            severity: 'error',
-            summary: 'ERROR',
-            detail: err.error.message,
-          });
-          return of(undefined);
-        })
+        catchError(() => of(undefined))
       );
   }
 
-  setClose(id: number): Observable<Meeting | undefined> {
+  close(id: number): Observable<Meeting | undefined> {
     return this.http
       .patch<MeetingResponse>(`${this.serverUrl}/close/${id}`, null)
       .pipe(
@@ -221,6 +195,7 @@ export class MeetingsService {
 
           this.state().meetings.set(meet.id, meet);
           this.state.set({ meetings: this.state().meetings });
+
           this.notificatorService.notificate({
             severity: 'success',
             summary: 'ACTUALIZADO',
@@ -229,14 +204,7 @@ export class MeetingsService {
 
           return of(meet);
         }),
-        catchError((err: HttpErrorResponse) => {
-          this.notificatorService.notificate({
-            severity: 'error',
-            summary: 'ERROR',
-            detail: err.error.message,
-          });
-          return of(undefined);
-        })
+        catchError(() => of(undefined))
       );
   }
 

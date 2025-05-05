@@ -14,10 +14,11 @@
       {{ meeting ? meeting.name : "" }}
     </h3> -->
 
+@if (meeting()) {
 <div class="">
   <p-toolbar>
     <ng-template #start>
-      @if (meeting().status?.toLowerCase()!==completed.toLowerCase()) {
+      @if (meeting()!.status!.toLowerCase()!==completed.toLowerCase()) {
       <p-button
         label="Agregar"
         severity="success"
@@ -38,6 +39,7 @@
     </ng-template>
   </p-toolbar>
 </div>
+}
 
 <div class="flex flex-column">
   <p-table

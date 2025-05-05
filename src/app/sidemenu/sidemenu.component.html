@@ -5,3 +5,7 @@
 >
   <p-panelmenu [model]="items()" styleClass="w-full md:w-80" />
 </p-drawer>
+
+@if (formRegisterVisible) {
+<app-register [pwdMode]="true" (onHide)="hideFormRegisterDialog()" />
+}

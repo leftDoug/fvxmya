@@ -1,5 +1,9 @@
 import { Routes } from '@angular/router';
-import { PruebaComponent } from './prueba/prueba.component';
+import { LoginComponent } from './auth/pages/login/login.component';
+import { adminGuard } from './shared/guards/admin.guard';
+import { authGuard } from './shared/guards/auth.guard';
+import { leaderGuard } from './shared/guards/leader.guard';
+import { loginGuard } from './shared/guards/login.guard';
 
 export const routes: Routes = [
   {
@@ -8,51 +12,55 @@ export const routes: Routes = [
       {
         path: '',
         title: 'Organizaciones',
+        canActivate: [authGuard, leaderGuard],
         loadComponent: () =>
           import(
             './organizations/pages/organizations-table/organizations-table.component'
           ).then((c) => c.OrganizationsTableComponent),
       },
       {
-        path: 'info/:id',
-        title: 'Informacion de la Organización',
+        path: 'detalles/:id',
+        title: 'Detalles de la Organización',
+        canActivate: [authGuard, leaderGuard],
         loadComponent: () =>
           import(
             './organizations/pages/organization-info/organization-info.component'
           ).then((c) => c.OrganizationInfoComponent),
       },
-      {
-        path: 'tipo-de-reunion/reuniones/:id',
-        title: 'Reuniones',
-        loadComponent: () =>
-          import(
-            './types-of-meetings/pages/type-of-meeting-info/type-of-meeting-info.component'
-          ).then((c) => c.TypeOfMeetingInfoComponent),
-      },
-      {
-        path: 'tipo-de-reunion/agendas/:id',
-        title: 'Agendas',
-        loadComponent: () =>
-          import(
-            './types-of-meetings/pages/type-of-meeting-info/type-of-meeting-info.component'
-          ).then((c) => c.TypeOfMeetingInfoComponent),
-      },
+      // {
+      //   path: 'tipo-de-reunion/reuniones/:id',
+      //   title: 'Reuniones',
+      //   loadComponent: () =>
+      //     import(
+      //       './types-of-meetings/pages/type-of-meeting-info/type-of-meeting-info.component'
+      //     ).then((c) => c.TypeOfMeetingInfoComponent),
+      // },
+      // {
+      //   path: 'tipo-de-reunion/agendas/:id',
+      //   title: 'Agendas',
+      //   loadComponent: () =>
+      //     import(
+      //       './types-of-meetings/pages/type-of-meeting-info/type-of-meeting-info.component'
+      //     ).then((c) => c.TypeOfMeetingInfoComponent),
+      // },
     ],
   },
   {
     path: 'reuniones',
     children: [
       {
-        path: '',
+        path: 'tipo-reunion/:id',
         title: 'Reuniones',
+        canActivate: [authGuard, leaderGuard],
         loadComponent: () =>
           import(
-            './meetings/pages/meetings-table/meetings-table.component'
-          ).then((c) => c.MeetingsTableComponent),
+            './types-of-meetings/pages/type-of-meeting-info/type-of-meeting-info.component'
+          ).then((c) => c.TypeOfMeetingInfoComponent),
       },
       {
-        path: 'info/:id',
-        title: 'Informacion de la Reunión',
+        path: 'detalles/:id',
+        title: 'Detalles de la Reunión',
+        canActivate: [authGuard, leaderGuard],
         loadComponent: () =>
           import('./meetings/pages/meeting-info/meeting-info.component').then(
             (c) => c.MeetingInfoComponent
@@ -64,32 +72,18 @@ export const routes: Routes = [
     path: 'agendas',
     children: [
       {
-        path: '',
+        path: 'tipo-reunion/:id',
         title: 'Agendas',
-        loadComponent: () =>
-          import('./agendas/pages/agendas-table/agendas-table.component').then(
-            (c) => c.AgendasTableComponent
-          ),
-      },
-      {
-        path: ':id',
-        title: 'Agendas',
+        canActivate: [authGuard, leaderGuard],
         loadComponent: () =>
           import(
             './types-of-meetings/pages/type-of-meeting-info/type-of-meeting-info.component'
           ).then((c) => c.TypeOfMeetingInfoComponent),
       },
       {
-        path: 'info/:id',
-        title: 'Informacion de la Agenda',
-        loadComponent: () =>
-          import('./agendas/pages/agenda-form/agenda-form.component').then(
-            (c) => c.AgendaFormComponent
-          ),
-      },
-      {
-        path: 'agregar/:id',
-        title: 'Crear Agenda',
+        path: 'detalles/:id',
+        title: 'Detalles de la Agenda',
+        canActivate: [authGuard, leaderGuard],
         loadComponent: () =>
           import('./agendas/pages/agenda-form/agenda-form.component').then(
             (c) => c.AgendaFormComponent
@@ -103,6 +97,7 @@ export const routes: Routes = [
       {
         path: '',
         title: 'Usuarios',
+        canActivate: [adminGuard],
         loadComponent: () =>
           import('./auth/pages/admin-table/admin-table.component').then(
             (c) => c.AdminTableComponent
@@ -111,16 +106,59 @@ export const routes: Routes = [
     ],
   },
   {
-    path: 'prueba',
-    component: PruebaComponent,
+    path: 'acuerdos',
+    children: [
+      {
+        path: '',
+        title: 'Acuerdos del Usuario',
+        canActivate: [authGuard],
+        loadComponent: () =>
+          import(
+            './agreements/pages/agreements-page/agreements-page.component'
+          ).then((c) => c.AgreementsPageComponent),
+      },
+      {
+        path: 'reunion/:id',
+        canActivate: [authGuard, leaderGuard],
+        title: 'Acuerdos de la Reunión',
+        loadComponent: () =>
+          import(
+            './agreements/pages/agreements-page/agreements-page.component'
+          ).then((c) => c.AgreementsPageComponent),
+      },
+      {
+        path: 'general',
+        canActivate: [authGuard, leaderGuard],
+        title: 'Acuerdos',
+        loadComponent: () =>
+          import(
+            './agreements/pages/agreements-page/agreements-page.component'
+          ).then((c) => c.AgreementsPageComponent),
+      },
+    ],
+  },
+  {
+    path: 'iniciar-sesion',
+    title: 'Inicio de Sesión',
+    canActivate: [loginGuard],
+    component: LoginComponent,
+  },
+  {
+    path: 'acceso-denegado',
+    title: 'Acceso denegado',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./access-denied/access-denied.component').then(
+        (c) => c.AccessDeniedComponent
+      ),
   },
   {
     path: '',
-    redirectTo: '/organizaciones',
+    redirectTo: 'iniciar-sesion',
     pathMatch: 'full',
   },
-  // {
-  //   path: '**',
-  //   component: OrganizationsTableComponent,
-  // },
+  {
+    path: '**',
+    redirectTo: '',
+  },
 ];

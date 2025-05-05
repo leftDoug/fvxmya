@@ -17,6 +17,11 @@ export interface Agreement {
   idResponsible?: string;
 }
 
+export interface AgreementState {
+  loading: boolean;
+  data: Agreement | undefined;
+}
+
 export interface AgreementResponse {
   ok: boolean;
   data?: Agreement | Agreement[];

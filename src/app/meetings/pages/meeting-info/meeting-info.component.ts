@@ -124,7 +124,7 @@ export class MeetingInfoComponent implements OnInit {
 
   ngOnInit(): void {
     // const idMeeting = parseInt(this.route.snapshot.paramMap.get('id')!);
-    this.meetingsService.getInfo(Number(this.idMeeting())).subscribe((meet) => {
+    this.meetingsService.getById(Number(this.idMeeting())).subscribe((meet) => {
       if (meet) {
         console.log(meet);
         this.meeting.set(meet);
@@ -138,7 +138,7 @@ export class MeetingInfoComponent implements OnInit {
               StatusMeeting.CLOSED.toLowerCase()
             ) {
               this.organizationsService
-                .getInfo(this.typeOfMeeting.organization?.id!)
+                .getById(this.typeOfMeeting.organization?.id!)
                 .subscribe((org) => {
                   if (org) {
                     this.organization = org;
@@ -175,7 +175,7 @@ export class MeetingInfoComponent implements OnInit {
   }
 
   openMeeting() {
-    this.meetingsService.setOpen(this.meeting()!.id).subscribe((resp) => {
+    this.meetingsService.open(this.meeting()!.id).subscribe((resp) => {
       if (resp) {
         this.meeting.set(resp);
         this.showAttendanceDialog();
@@ -184,12 +184,12 @@ export class MeetingInfoComponent implements OnInit {
   }
 
   closeMeeting() {
-    this.meetingsService.setClose(this.meeting()!.id).subscribe((resp) => {
+    this.meetingsService.close(this.meeting()!.id).subscribe((resp) => {
       if (resp) {
         this.meeting.set(resp);
 
         this.organizationsService
-          .getInfo(this.typeOfMeeting!.organization?.id!)
+          .getById(this.typeOfMeeting!.organization?.id!)
           .subscribe((org) => {
             if (org) {
               this.organization = org;
