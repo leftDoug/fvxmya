@@ -333,6 +333,7 @@ export class MeetingFormComponent implements OnInit {
       )
       .subscribe((age) => {
         if (age) {
+          console.log(age);
           const topics: Topic[] = age.topics!;
 
           this.sourceTopics.set(

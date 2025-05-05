@@ -20,38 +20,41 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(AuthService);
   const notificatorService = inject(NotificatorService);
   const tokenService = inject(TokenService);
-  const refreshTokenSubject: BehaviorSubject<any> = new BehaviorSubject<any>(
-    null
-  );
+  const refreshSubject: BehaviorSubject<any> = new BehaviorSubject<any>(null);
+  let refreshInProgress = false;
 
+  // TODO falta gestionar la manera en k se comporta para las rutas
   return next(req).pipe(
     catchError((err: HttpErrorResponse) => {
       if (err.status === 401) {
         if (err.error.expired) {
-          if (!tokenService.getIsRefreshing()) {
-            tokenService.startRefreshing();
-            refreshTokenSubject.next(null);
+          if (!refreshInProgress) {
+            refreshInProgress = true;
+
+            refreshSubject.next(null);
 
             return authService.refreshToken().pipe(
-              switchMap((tokens) => {
-                tokenService.stopRefreshing();
+              switchMap((token) => {
+                refreshInProgress = false;
 
-                refreshTokenSubject.next(tokens.authToken);
-
-                return next(addToken(req, tokens.authToken!));
+                return next(addToken(req, token));
               }),
               catchError((err: HttpErrorResponse) => {
-                tokenService.stopRefreshing();
+                refreshInProgress = false;
 
                 notificateError(err.error.message, notificatorService);
 
-                authService.logout();
+                if (
+                  tokenService.isTokenExpired(tokenService.getRefreshToken()!)
+                ) {
+                  authService.logout();
+                }
 
                 return throwError(() => err.error);
               })
             );
           } else {
-            return refreshTokenSubject.pipe(
+            return refreshSubject.pipe(
               filter((token) => token !== null),
               take(1),
               switchMap((token) => next(addToken(req, token)))
@@ -61,7 +64,9 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
 
         notificateError(err.error.message, notificatorService);
 
-        authService.logout();
+        if (tokenService.isTokenExpired(tokenService.getRefreshToken()!)) {
+          authService.logout();
+        }
 
         return throwError(() => err.error);
       }
@@ -88,136 +93,3 @@ const notificateError = (message: string, notificator: NotificatorService) => {
     detail: message,
   });
 };
-
-// const refreshToken = (
-//   req: HttpRequest<unknown>,
-//   isRefreshing:boolean,
-//   authService: AuthService,
-//   notificatorService: NotificatorService,
-//   next: HttpHandlerFn
-// ) => {
-//   console.log('refreshing token');
-
-//   return authService.refreshToken().pipe(
-//     switchMap((resp: TokenResponse) => {
-//       isRefreshing=false
-//       const authToken = resp.authToken as string;
-//       const modReq = req.clone({
-//         setHeaders: {
-//           Authorization: `Bearer ${authToken}`,
-//         },
-//       });
-
-//       return next(modReq);
-//     }),
-//     catchError((err: HttpErrorResponse) => {
-//       notificateError(err.error.message, notificatorService);
-
-//       return throwError(() => err.error);
-//     })
-//   );
-// };
-
-// // const authService = inject(AuthService);
-// // const tokenService = inject(TokenService);
-// // const notificatorService = inject(NotificatorService);
-
-// export const errorInterceptor: HttpInterceptorFn = (req, next) => {
-//   // const authService=inject(AuthService)
-//   const tokenService = inject(TokenService);
-//   const notificatorService = inject(NotificatorService);
-
-//   return next(req).pipe(
-//     catchError((err: HttpErrorResponse) => {
-//       if (err.status === 401 && err.error.expired) {
-//         return callRefreshToken(req, next);
-
-//         // authService.refreshToken().pipe(
-//         //   switchMap(()=>{
-//         //     const authToken=tokenService.getAccessToken()
-//         //     const modifiedReq=req.clone({
-//         //       setHeaders:{
-//         //         Authorization:`Bearer ${authToken}`
-//         //       }
-//         //     })
-
-//         //     return next(modifiedReq)
-//         //   }),
-//         //   catchError((err:HttpErrorResponse)=>{
-//         //     tokenService.removeTokens()
-//         //     authService.logout()
-//         //     return next(req)
-//         //   })
-//         // )
-//       }
-
-//       if (err.status === 403 || err.status === 401) {
-//         notificatorService.notificate({
-//           severity: 'error',
-//           summary: 'ERROR',
-//           detail: err.error.message,
-//         });
-
-//         if (err.status === 401) {
-//           return callLogout(req, next);
-//         }
-//       }
-
-//       if (!tokenService.getRefreshToken()) {
-//         notificatorService.notificate({
-//           severity: 'error',
-//           summary: 'ERROR',
-//           detail:
-//             'Debe estar autenticado en el sistema para realizar esta acción',
-//         });
-
-//         return callLogout(req, next);
-//         // tokenService.removeTokens()
-//         // authService.logout()
-//         // return next(req)
-//       }
-
-//       notificatorService.notificate({
-//         severity: 'error',
-//         summary: 'ERROR',
-//         detail: err.error.message,
-//       });
-
-//       return throwError(() => err.error);
-//     })
-//   );
-// };
-
-// const callRefreshToken = (req: HttpRequest<unknown>, next: HttpHandlerFn) => {
-//   const authService = inject(AuthService);
-//   const tokenService = inject(TokenService);
-//   console.log('entra');
-
-//   return authService.refreshToken().pipe(
-//     switchMap(() => {
-//       const authToken = tokenService.getAccessToken();
-//       const modifiedReq = req.clone({
-//         setHeaders: {
-//           Authorization: `Bearer ${authToken}`,
-//         },
-//       });
-
-//       return next(modifiedReq);
-//     }),
-//     catchError((err: HttpErrorResponse) => {
-//       return callLogout(req, next);
-//       // tokenService.removeTokens()
-//       // authService.logout()
-//       // return next(req)
-//     })
-//   );
-// };
-
-// const callLogout = (req: HttpRequest<unknown>, next: HttpHandlerFn) => {
-//   const authService = inject(AuthService);
-//   const tokenService = inject(TokenService);
-
-//   tokenService.removeTokens();
-//   authService.logout();
-//   return next(req);
-// };

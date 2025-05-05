@@ -21,7 +21,7 @@ import { NotificatorService } from '@app/services/notificator.service';
   providedIn: 'root',
 })
 export class TypesOfMeetingsService {
-  private readonly serverUrl = `${baseUrl}/types-of-meetings`;
+  private readonly serverUrl = `${baseUrl}/types-meetings`;
   private readonly notificatorService = inject(NotificatorService);
   private readonly http = inject(HttpClient);
   private state = signal({
@@ -55,68 +55,67 @@ export class TypesOfMeetingsService {
     });
   }
 
-  getAllFrom(id: number): Observable<TypeOfMeeting[] | []> {
-    return this.http
+  getAllFrom(id: number): void {
+    this.http
       .get<TypeOfMeetingResponse>(`${this.serverUrl}/organization/${id}`)
-      .pipe(
-        switchMap((resp: TypeOfMeetingResponse) => {
-          return of(resp.data as TypeOfMeeting[]);
-        }),
-        catchError((err: HttpErrorResponse) => {
-          this.notificatorService.notificate({
-            severity: 'error',
-            summary: 'ERROR',
-            detail: err.message,
-          });
-          return of([]);
-        })
-      );
-  }
+      .subscribe({
+        next: (resp) => {
+          console.log(resp);
+          const toms: TypeOfMeeting[] = resp.data as TypeOfMeeting[];
 
-  getById(id: string): Observable<TypeOfMeeting | undefined> {
-    let typeOfMeeting = this.state().typesOfMeetings.get(Number(id));
-
-    if (!typeOfMeeting) {
-      this.http
-        .get<TypeOfMeetingResponse>(`${this.serverUrl}/${id}`)
-        .subscribe({
-          next: (resp: TypeOfMeetingResponse) => {
-            typeOfMeeting = resp.data as TypeOfMeeting;
-            this.state().typesOfMeetings.set(typeOfMeeting.id, typeOfMeeting);
-            this.state.set({ typesOfMeetings: this.state().typesOfMeetings });
-          },
-          error: (error) => {
-            this.notificatorService.notificate({
-              severity: 'error',
-              summary: 'ERROR',
-              detail: error.message,
+          of(toms).subscribe((result) => {
+            result.forEach((tom) => {
+              this.state().typesOfMeetings.set(tom.id, tom);
             });
-          },
-        });
-    }
 
-    return new Observable<TypeOfMeeting | undefined>((observer) => {
-      observer.next(typeOfMeeting);
-      observer.complete();
-    });
+            this.state.set({ typesOfMeetings: this.state().typesOfMeetings });
+          });
+        },
+      });
   }
 
-  getInfo(id: number): Observable<TypeOfMeeting | undefined> {
-    return this.http
-      .get<TypeOfMeetingResponse>(`${this.serverUrl}/info/${id}`)
-      .pipe(
-        switchMap((resp: TypeOfMeetingResponse) => {
-          return of(resp.data as TypeOfMeeting);
-        }),
-        catchError((err: HttpErrorResponse) => {
-          this.notificatorService.notificate({
-            severity: 'error',
-            summary: 'ERROR',
-            detail: err.error.message,
-          });
-          return of(undefined);
-        })
-      );
+  // getById(id: string): Observable<TypeOfMeeting | undefined> {
+  //   let typeOfMeeting = this.state().typesOfMeetings.get(Number(id));
+
+  //   if (!typeOfMeeting) {
+  //     this.http
+  //       .get<TypeOfMeetingResponse>(`${this.serverUrl}/${id}`)
+  //       .subscribe({
+  //         next: (resp: TypeOfMeetingResponse) => {
+  //           typeOfMeeting = resp.data as TypeOfMeeting;
+  //           this.state().typesOfMeetings.set(typeOfMeeting.id, typeOfMeeting);
+  //           this.state.set({ typesOfMeetings: this.state().typesOfMeetings });
+  //         },
+  //         error: (error) => {
+  //           this.notificatorService.notificate({
+  //             severity: 'error',
+  //             summary: 'ERROR',
+  //             detail: error.message,
+  //           });
+  //         },
+  //       });
+  //   }
+
+  //   return new Observable<TypeOfMeeting | undefined>((observer) => {
+  //     observer.next(typeOfMeeting);
+  //     observer.complete();
+  //   });
+  // }
+
+  getById(id: number): Observable<TypeOfMeeting | undefined> {
+    return this.http.get<TypeOfMeetingResponse>(`${this.serverUrl}/${id}`).pipe(
+      switchMap((resp: TypeOfMeetingResponse) => {
+        return of(resp.data as TypeOfMeeting);
+      }),
+      catchError((err: HttpErrorResponse) => {
+        this.notificatorService.notificate({
+          severity: 'error',
+          summary: 'ERROR',
+          detail: err.error.message,
+        });
+        return of(undefined);
+      })
+    );
   }
 
   remove(id: number): void {

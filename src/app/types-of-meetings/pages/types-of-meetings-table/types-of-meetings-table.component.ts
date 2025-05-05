@@ -42,7 +42,7 @@ export class TypesOfMeetingsTableComponent implements OnInit {
   typesOfMeetings = computed(() => {
     return this.tomsService
       .getAllFormatted()
-      .filter((tom) => tom.idOrganization === this.organization().id);
+      .filter((tom) => tom.organization?.id === this.organization().id);
   });
 
   formDialogVisible: boolean = false;
@@ -80,11 +80,11 @@ export class TypesOfMeetingsTableComponent implements OnInit {
   // sortField!: string;
   // sortKey: string | undefined;
 
-  constructor() {
-    this.tomsService.getAll();
-  }
+  constructor() {}
 
   ngOnInit(): void {
+    console.log(this.organization());
+    this.tomsService.getAllFrom(this.organization().id);
     // this.organizationsService
     //   .getToMs(this.organization.id)
     //   .subscribe(
@@ -94,10 +94,6 @@ export class TypesOfMeetingsTableComponent implements OnInit {
     //   { label: 'Año Descendente', value: '!year' },
     //   { label: 'Año Ascendente', value: 'year' },
     // ];
-  }
-
-  goToMeetings(id: number) {
-    this.router.navigateByUrl(`organizaciones/tipo-de-reunion/reuniones/${id}`);
   }
 
   showRemoveConfirmation(event: Event, id: number, name: string) {
@@ -304,7 +300,11 @@ export class TypesOfMeetingsTableComponent implements OnInit {
   //   });
   // }
 
+  goToMeetings(id: number) {
+    this.router.navigate(['reuniones/tipo-reunion', id]);
+  }
+
   goToAgendas(id: number) {
-    this.router.navigateByUrl(`agendas/${id}`);
+    this.router.navigate(['agendas/tipo-reunion', id]);
   }
 }

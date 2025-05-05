@@ -26,22 +26,25 @@ export class AgendasService {
   }
 
   getAllFrom(id: number): void {
-    if (!this.tomsRequested.includes(id)) {
-      this.http
-        .get<AgendaResponse>(`${this.serverUrl}/type-meeting/${id}`)
-        .subscribe({
-          next: (resp: AgendaResponse) => {
-            const agendas = resp.data as Agenda[];
-            of(agendas).subscribe((result) => {
-              result.forEach((a) => {
-                this.state().agendas.set(a.id, a);
-              });
-              this.state.set({ agendas: this.state().agendas });
+    // if (!this.tomsRequested.includes(id)) {
+    this.http
+      .get<AgendaResponse>(`${this.serverUrl}/type-meeting/${id}`)
+      .subscribe({
+        next: (resp) => {
+          const ages = resp.data as Agenda[];
+
+          of(ages).subscribe((result) => {
+            result.forEach((age) => {
+              this.state().agendas.set(age.id, age);
             });
-            this.tomsRequested.push(id);
-          },
-        });
-    }
+
+            this.state.set({ agendas: this.state().agendas });
+          });
+
+          // this.tomsRequested.push(id);
+        },
+      });
+    // }
   }
 
   // TODO probar este
@@ -49,6 +52,7 @@ export class AgendasService {
     idTom: number,
     year: number
   ): Observable<Agenda | undefined> {
+    console.log(this.getAllFormatted());
     const agenda = this.getAllFormatted().find(
       (a) => a.typeOfMeeting?.id === idTom && a.year === year
     );

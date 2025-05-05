@@ -7,7 +7,7 @@ import {
   output,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import {
   Agreement,
   Status as StatusAgreement,
@@ -18,6 +18,9 @@ import {
   Meeting,
   Status as StatusMeeting,
 } from '@app/meetings/interfaces/meeting.interface';
+import { MeetingsService } from '@app/meetings/services/meetings.service';
+import { OrganizationsService } from '@app/organizations/services/organizations.service';
+import { TypesOfMeetingsService } from '@app/types-of-meetings/services/types-of-meetings.service';
 import { ButtonModule } from 'primeng/button';
 import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
@@ -51,7 +54,11 @@ import { AgreementInfoComponent } from '../agreement-info/agreement-info.compone
 export class AgreementsTableComponent implements OnInit {
   private readonly authService = inject(AuthService);
   private readonly agreementsService = inject(AgreementsService);
+  private readonly meetingService = inject(MeetingsService);
+  private readonly tomService = inject(TypesOfMeetingsService);
+  private readonly organizationService = inject(OrganizationsService);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
 
   meeting = input<Meeting>();
 
@@ -86,6 +93,31 @@ export class AgreementsTableComponent implements OnInit {
         }));
     }
   });
+  generalAgreements = computed(() =>
+    this.agreementsService
+      .getAllFormatted()
+      .filter((agr) =>
+        this.meetingService
+          .getAllFormatted()
+          .some(
+            (meet) =>
+              meet.id === agr.meeting?.id &&
+              this.tomService
+                .getAllFormatted()
+                .some(
+                  (tom) =>
+                    tom.id === meet.typeOfMeeting?.id &&
+                    this.organizationService
+                      .getAllFormatted()
+                      .some(
+                        (org) =>
+                          org.id === tom.organization?.id &&
+                          org.leader?.id === this.authService.getCurrentUserId()
+                      )
+                )
+          )
+      )
+  );
   // agreements = computed(() =>
   //   this.agreementsService
   //     .getAllFormatted()
@@ -155,6 +187,8 @@ export class AgreementsTableComponent implements OnInit {
 
   // idAgreement: string = '';
 
+  general = false;
+
   formDialogVisible: boolean = false;
   loading: boolean = true;
   infoDialogVisible: boolean = false;
@@ -164,6 +198,11 @@ export class AgreementsTableComponent implements OnInit {
   constructor() {}
 
   ngOnInit(): void {
+    if (this.route.snapshot.routeConfig?.path?.includes('general')) {
+      this.general = true;
+
+      this.agreementsService.getAllFromLeader();
+    }
     if (this.meeting()) {
       this.agreementsService.getAllFromMeeting(this.meeting()!.id);
       this.workers = this.meeting()!.participants as User[];

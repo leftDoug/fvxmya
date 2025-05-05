@@ -89,6 +89,15 @@ export const routes: Routes = [
             (c) => c.AgendaFormComponent
           ),
       },
+      {
+        path: 'agregar/:id',
+        title: 'Agregar Agenda',
+        canActivate: [authGuard, leaderGuard],
+        loadComponent: () =>
+          import('./agendas/pages/agenda-form/agenda-form.component').then(
+            (c) => c.AgendaFormComponent
+          ),
+      },
     ],
   },
   {
@@ -157,8 +166,8 @@ export const routes: Routes = [
     redirectTo: 'iniciar-sesion',
     pathMatch: 'full',
   },
-  {
-    path: '**',
-    redirectTo: '',
-  },
+  // {
+  //   path: '**',
+  //   redirectTo: 'iniciar-sesion',
+  // },
 ];

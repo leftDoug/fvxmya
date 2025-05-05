@@ -6,7 +6,7 @@
         severity="success"
         icon="pi pi-plus"
         [text]="true"
-        (onClick)="goToCreate()"
+        (onClick)="goToAdd()"
       />
     </ng-template>
 
@@ -50,7 +50,9 @@
         [ngClass]="{ 'border-top-1 surface-border': !first }"
       >
         <div class="flex flex-column">
-          <span class="text-lg font-medium">{{ agenda.year }}</span>
+          <span class="text-lg font-medium">{{
+            agenda.year | date : "YYYY"
+          }}</span>
         </div>
 
         <div class="flex flex-column">
@@ -60,8 +62,9 @@
               severity="info"
               [rounded]="true"
               [text]="true"
-              [routerLink]="['../info', agenda.id]"
+              (onClick)="goToDetails(agenda.id)"
             />
+            <!-- [routerLink]="['../info', agenda.id]" -->
 
             <p-button
               icon="pi pi-trash"

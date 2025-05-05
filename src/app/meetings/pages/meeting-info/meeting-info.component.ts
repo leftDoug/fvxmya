@@ -128,7 +128,7 @@ export class MeetingInfoComponent implements OnInit {
       if (meet) {
         console.log(meet);
         this.meeting.set(meet);
-        this.tomsService.getInfo(meet.typeOfMeeting?.id!).subscribe((tom) => {
+        this.tomsService.getById(meet.typeOfMeeting?.id!).subscribe((tom) => {
           if (tom) {
             this.typeOfMeeting = tom;
             this.loading = false;
@@ -215,10 +215,9 @@ export class MeetingInfoComponent implements OnInit {
   }
 
   goBack() {
-    this.router.navigateByUrl(
-      'organizaciones/tipo-de-reunion/reuniones/' +
-        this.meeting()?.typeOfMeeting?.id
-    );
+    this.router.navigate(['tipo-reunion', this.meeting()?.typeOfMeeting?.id], {
+      relativeTo: this.route.parent,
+    });
   }
 
   showAgreements() {

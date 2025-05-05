@@ -1,4 +1,4 @@
-import { Component, inject, input, model, OnInit } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AgendasTableComponent } from '@app/agendas/pages/agendas-table/agendas-table.component';
 import { MeetingsTableComponent } from '@app/meetings/pages/meetings-table/meetings-table.component';
@@ -36,7 +36,9 @@ export class TypeOfMeetingInfoComponent implements OnInit {
   agendasVisible: boolean = false;
 
   constructor() {
-    if (this.route.snapshot.routeConfig?.path?.includes('reuniones')) {
+    console.log(this.route.snapshot);
+    if (this.route.snapshot.parent?.routeConfig?.path?.includes('reuniones')) {
+      // if (this.route.snapshot.routeConfig?.path?.includes('reuniones')) {
       this.meetingsVisible = true;
     } else if (
       this.route.parent?.snapshot.routeConfig?.path?.includes('agendas')
@@ -47,8 +49,9 @@ export class TypeOfMeetingInfoComponent implements OnInit {
 
   ngOnInit(): void {
     const idTom = this.route.snapshot.paramMap.get('id');
-    this.tomsService.getInfo(Number(idTom)).subscribe((resp) => {
+    this.tomsService.getById(Number(idTom)).subscribe((resp) => {
       if (resp) {
+        console.log(resp);
         this.typeOfMeeting = resp;
         this.loading = false;
       }
@@ -66,18 +69,12 @@ export class TypeOfMeetingInfoComponent implements OnInit {
   reloadInfo(hasChanges: boolean) {
     if (hasChanges) {
       this.loading = true;
-      this.tomsService.getInfo(this.typeOfMeeting.id).subscribe((resp) => {
+      this.tomsService.getById(this.typeOfMeeting.id).subscribe((resp) => {
         if (resp) {
           this.typeOfMeeting = resp;
           this.loading = false;
         }
       });
     }
-  }
-
-  goBack() {
-    this.router.navigateByUrl(
-      `organizaciones/info/${this.typeOfMeeting.organization!.id}`
-    );
   }
 }

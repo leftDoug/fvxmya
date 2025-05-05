@@ -70,7 +70,7 @@ export class MeetingsService {
   // }
 
   getById(id: number): Observable<Meeting | undefined> {
-    return this.http.get<MeetingResponse>(`${this.serverUrl}/info/${id}`).pipe(
+    return this.http.get<MeetingResponse>(`${this.serverUrl}/${id}`).pipe(
       switchMap((resp: MeetingResponse) => {
         const meet: Meeting = resp.data as Meeting;
 

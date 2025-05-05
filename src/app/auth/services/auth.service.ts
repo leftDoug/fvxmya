@@ -11,7 +11,7 @@ import {
 import { NotificatorService } from '@app/services/notificator.service';
 import { TokenService } from '@app/shared/services/token.service';
 import { JwtHelperService } from '@auth0/angular-jwt';
-import { catchError, Observable, of, switchMap, tap, throwError } from 'rxjs';
+import { catchError, Observable, of, switchMap, throwError } from 'rxjs';
 import { Role, UserInfo } from '../interfaces/user.interface';
 
 @Injectable({
@@ -28,7 +28,6 @@ export class AuthService {
   // private users = signal<Map<string, User>>(new Map());
   private currentUser = signal<UserInfo | null>(null);
   private isAuthenticated = signal<boolean>(false);
-  private isRefreshing = false;
   // private userIsAuthenticated = signal<boolean>(false);
 
   constructor() {
@@ -271,79 +270,35 @@ export class AuthService {
   }
 
   logout(): void {
+    console.log('llamada');
     const refreshToken = this.tokenService.getRefreshToken();
 
-    this.tokenService.removeTokens();
+    console.log(refreshToken);
 
-    this.currentUser.set(null);
-
-    if (refreshToken) {
-      this.http.post<{ message: string }>(`${this.serverUrl}/logout`, {
+    this.http
+      .post(`${this.serverUrl}/logout`, {
         refreshToken,
+      })
+      .subscribe(() => {
+        this.tokenService.removeTokens();
+        this.currentUser.set(null);
+        this.router.navigate(['iniciar-sesion']);
       });
-    }
-
-    this.router.navigate(['iniciar-sesion']);
   }
 
-  refreshToken(): Observable<TokenResponse> {
-    if (this.isRefreshing) {
-      if (this.tokenService.getRefreshToken()) {
-        return of({
-          authToken: this.tokenService.getAuthToken()!,
-          refreshToken: this.tokenService.getRefreshToken()!,
-        });
-      }
-
-      return throwError(
-        () => new Error('(SERVICE: Error al actualizar token)')
-      );
-    }
-    this.isRefreshing = false;
-
+  refreshToken(): Observable<string> {
     const refreshToken = this.tokenService.getRefreshToken();
-
-    if (!refreshToken) {
-      this.isRefreshing = false;
-
-      this.notificatorService.notificate({
-        severity: 'error',
-        summary: 'ERROR',
-        detail: 'SERVICE: Refresh token no encontrado',
-      });
-
-      this.logout();
-
-      return throwError(
-        () => new Error('SERVICE: Refresh token no encontrado')
-      );
-    }
-
-    if (this.tokenService.isTokenExpired(refreshToken)) {
-      this.isRefreshing = false;
-
-      this.notificatorService.notificate({
-        severity: 'error',
-        summary: 'ERROR',
-        detail: 'SERVICE: Sesión expirada. Vuelva a iniciar sesión',
-      });
-
-      this.logout();
-
-      return throwError(
-        () => new Error('SERVICE: Sesión expirada. Vuelva a iniciar sesión')
-      );
-    }
 
     return this.http
       .post<TokenResponse>(`${this.serverUrl}/refresh`, { refreshToken })
       .pipe(
-        tap((resp) => {
-          this.isRefreshing = false;
+        switchMap((resp) => {
           const authToken = resp.authToken as string;
           const newRefreshToken = resp.refreshToken as string;
 
           this.tokenService.saveTokens(authToken, newRefreshToken);
+
+          return of(authToken);
         }),
         catchError((err) => throwError(() => err))
       );

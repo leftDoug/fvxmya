@@ -21,7 +21,7 @@ export class AgreementsService {
   }
 
   getAllFromUser(): Observable<Agreement[]> {
-    return this.http.get<AgreementResponse>(`${this.serverUrl}`).pipe(
+    return this.http.get<AgreementResponse>(this.serverUrl).pipe(
       switchMap((resp) => {
         const agr: Agreement[] = resp.data as Agreement[];
 
@@ -37,6 +37,22 @@ export class AgreementsService {
       }),
       catchError(() => of([]))
     );
+  }
+
+  getAllFromLeader(): void {
+    this.http.get<AgreementResponse>(`${this.serverUrl}/leader`).subscribe({
+      next: (resp) => {
+        const agrs: Agreement[] = resp.data as Agreement[];
+
+        of(agrs).subscribe((result) => {
+          result.forEach((agr) => {
+            this.state().agreements.set(agr.id, agr);
+          });
+
+          this.state.set({ agreements: this.state().agreements });
+        });
+      },
+    });
   }
 
   getAllFromMeeting(id: number): void {

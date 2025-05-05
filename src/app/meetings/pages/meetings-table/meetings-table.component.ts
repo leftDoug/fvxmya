@@ -83,13 +83,14 @@ export class MeetingsTableComponent implements OnInit {
   //   }
   // }
 
-  goToInfo(id: number) {
-    this.router.navigateByUrl('/reuniones/info/' + id);
+  goToDetails(id: number) {
+    this.router.navigate(['reuniones/detalles', id]);
   }
 
   goBack() {
-    this.router.navigateByUrl(
-      `organizaciones/info/${this.typeOfMeeting().organization!.id}`
-    );
+    this.router.navigate([
+      'organizaciones/detalles',
+      this.typeOfMeeting().organization!.id,
+    ]);
   }
 }

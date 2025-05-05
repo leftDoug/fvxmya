@@ -118,7 +118,7 @@ export class AgendaFormComponent implements OnInit {
         }
       });
     } else {
-      this.tomsService.getInfo(Number(this.id())).subscribe((resp) => {
+      this.tomsService.getById(Number(this.id())).subscribe((resp) => {
         if (resp) {
           this.typeOfMeeting = resp;
         }
@@ -213,13 +213,12 @@ export class AgendaFormComponent implements OnInit {
 
   goBack() {
     if (this.editMode || this.infoMode) {
-      this.router.navigateByUrl(
-        `agendas/${
-          this.newAgenda?.typeOfMeeting?.id || this.newAgenda?.idTypeOfMeeting
-        }`
-      );
+      this.router.navigate([
+        'agendas/tipo-reunion',
+        this.newAgenda?.typeOfMeeting?.id || this.newAgenda?.idTypeOfMeeting,
+      ]);
     } else {
-      this.router.navigateByUrl(`agendas/${this.id()}`);
+      this.router.navigate(['agendas/tipo-reunion', this.id()]);
     }
   }
 

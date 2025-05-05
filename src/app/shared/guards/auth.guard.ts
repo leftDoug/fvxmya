@@ -1,5 +1,5 @@
 import { inject } from '@angular/core';
-import { type CanActivateFn } from '@angular/router';
+import { Router, type CanActivateFn } from '@angular/router';
 import { AuthService } from '@app/auth/services/auth.service';
 import { NotificatorService } from '@app/services/notificator.service';
 import { map } from 'rxjs';
@@ -9,6 +9,7 @@ export const authGuard: CanActivateFn = (route, state) => {
   const authService = inject(AuthService);
   const notificatorService = inject(NotificatorService);
   const tokenService = inject(TokenService);
+  const router = inject(Router);
 
   return authService.checkAuthStaus().pipe(
     map((authenticated) => {
@@ -27,6 +28,8 @@ export const authGuard: CanActivateFn = (route, state) => {
         summary: 'ERROR',
         detail: 'GUARD: Debe iniciar sesión para acceder a esta página',
       });
+
+      router.navigate(['iniciar-sesion']);
 
       return false;
     })
