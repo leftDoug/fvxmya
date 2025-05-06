@@ -55,6 +55,20 @@ export class TypesOfMeetingsService {
     });
   }
 
+  getAllFromLeader() {
+    this.http.get<TypeOfMeetingResponse>(`${this.serverUrl}/leader`).subscribe({
+      next: (resp) => {
+        const toms: TypeOfMeeting[] = resp.data as TypeOfMeeting[];
+        of(toms).subscribe((result) => {
+          result.forEach((tom) => {
+            this.state().typesOfMeetings.set(tom.id, tom);
+          });
+          this.state.set({ typesOfMeetings: this.state().typesOfMeetings });
+        });
+      },
+    });
+  }
+
   getAllFrom(id: number): void {
     this.http
       .get<TypeOfMeetingResponse>(`${this.serverUrl}/organization/${id}`)

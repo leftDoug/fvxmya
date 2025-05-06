@@ -1,4 +1,5 @@
 import { Component, computed, inject } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { AuthService } from '@app/auth/services/auth.service';
 import { CardModule } from 'primeng/card';
 import { AgreementsTableComponent } from '../agreements-table/agreements-table.component';
@@ -11,8 +12,14 @@ import { AgreementsTableComponent } from '../agreements-table/agreements-table.c
 })
 export class AgreementsPageComponent {
   private readonly authService = inject(AuthService);
+  private readonly route = inject(ActivatedRoute);
 
   userUsername = computed(() => this.authService.getCurrentUserUsername());
+  general = false;
 
-  constructor() {}
+  constructor() {
+    if (this.route.snapshot.routeConfig?.path?.includes('general')) {
+      this.general = true;
+    }
+  }
 }

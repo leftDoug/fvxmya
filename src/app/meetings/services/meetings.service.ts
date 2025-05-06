@@ -25,6 +25,20 @@ export class MeetingsService {
     return Array.from(this.state().meetings.values());
   }
 
+  getAllFromLeader() {
+    this.http.get<MeetingResponse>(`${this.serverUrl}/leader`).subscribe({
+      next: (resp) => {
+        const meets: Meeting[] = resp.data as Meeting[];
+        of(meets).subscribe((result) => {
+          result.forEach((meet) => {
+            this.state().meetings.set(meet.id, meet);
+          });
+          this.state.set({ meetings: this.state().meetings });
+        });
+      },
+    });
+  }
+
   getAllFrom(id: number) {
     this.http
       .get<MeetingResponse>(`${this.serverUrl}/type-meeting/${id}`)

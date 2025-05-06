@@ -131,9 +131,9 @@ export const routes: Routes = [
         canActivate: [authGuard, leaderGuard],
         title: 'Acuerdos de la Reunión',
         loadComponent: () =>
-          import(
-            './agreements/pages/agreements-page/agreements-page.component'
-          ).then((c) => c.AgreementsPageComponent),
+          import('./meetings/pages/meeting-info/meeting-info.component').then(
+            (c) => c.MeetingInfoComponent
+          ),
       },
       {
         path: 'general',

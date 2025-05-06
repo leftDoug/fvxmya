@@ -44,7 +44,7 @@ export class OrganizationsService {
   //   });
   // }
 
-  getAllFrom(): void {
+  getAllFromLeader(): void {
     this.http.get<OrganizationResponse>(`${this.apiUrl}/leader`).subscribe({
       next: (resp: OrganizationResponse) => {
         const organizations = resp.data as Organization[];

@@ -42,6 +42,7 @@ export class AgreementsService {
   getAllFromLeader(): void {
     this.http.get<AgreementResponse>(`${this.serverUrl}/leader`).subscribe({
       next: (resp) => {
+        console.log(resp);
         const agrs: Agreement[] = resp.data as Agreement[];
 
         of(agrs).subscribe((result) => {

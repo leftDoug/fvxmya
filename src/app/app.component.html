@@ -6,10 +6,22 @@
 
 <div class="flex flex-column">
   <p-menubar class="p-1 pb-0" [model]="items">
+    <!-- <ng-template #start>
+      <span>FVX M&A</span>
+    </ng-template> -->
+
     <ng-template #item let-item let-root="root">
       <a pRipple class="flex p-menubar-item-link justify-content-center">
         <p-inputicon [styleClass]="item.icon" />
       </a>
+    </ng-template>
+
+    <ng-template #end>
+      <div class="flex items-center gap-2">
+        <p-button rounded="true" size="small">
+          <p-avatar shape="circle" [label]="letter()" />
+        </p-button>
+      </div>
     </ng-template>
   </p-menubar>
 </div>

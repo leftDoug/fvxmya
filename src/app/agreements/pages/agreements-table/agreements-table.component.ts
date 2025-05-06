@@ -117,6 +117,15 @@ export class AgreementsTableComponent implements OnInit {
                 )
           )
       )
+      .sort((a, b) => a.number! - b.number!)
+      .map((a2) => ({
+        id: a2.id,
+        number: a2.number,
+        content: a2.content,
+        responsible: a2.responsible?.name,
+        meeting: a2.meeting?.name,
+        status: this.getStatus(a2),
+      }))
   );
   // agreements = computed(() =>
   //   this.agreementsService

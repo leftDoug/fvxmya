@@ -9,9 +9,18 @@ import {
   TokenResponse,
 } from '@app/models';
 import { NotificatorService } from '@app/services/notificator.service';
+import { DataService } from '@app/shared/services/data.service';
 import { TokenService } from '@app/shared/services/token.service';
 import { JwtHelperService } from '@auth0/angular-jwt';
-import { catchError, Observable, of, switchMap, throwError } from 'rxjs';
+import {
+  catchError,
+  Observable,
+  of,
+  shareReplay,
+  switchMap,
+  tap,
+  throwError,
+} from 'rxjs';
 import { Role, UserInfo } from '../interfaces/user.interface';
 
 @Injectable({
@@ -23,12 +32,14 @@ export class AuthService {
   private readonly notificatorService = inject(NotificatorService);
   private readonly tokenService = inject(TokenService);
   private readonly router = inject(Router);
+  private readonly dataService = inject(DataService);
   private jwtHelper = new JwtHelperService();
   // private state = signal({ users: new Map<string, User>() });
   // private users = signal<Map<string, User>>(new Map());
   private currentUser = signal<UserInfo | null>(null);
   private isAuthenticated = signal<boolean>(false);
   // private userIsAuthenticated = signal<boolean>(false);
+  private refreshInFlight$: Observable<string> | null = null;
 
   constructor() {
     if (
@@ -132,18 +143,34 @@ export class AuthService {
   }
 
   getCurrentUserId(): string | undefined {
+    if (!this.currentUser()) {
+      this.loadCurrentUser();
+    }
+
     return this.currentUser()?.id;
   }
 
   getCurrentUserUsername(): string | undefined {
+    if (!this.currentUser()) {
+      this.loadCurrentUser();
+    }
+
     return this.currentUser()?.username;
   }
 
   isAdmin(): boolean {
+    if (!this.currentUser()) {
+      this.loadCurrentUser();
+    }
+
     return this.currentUser()?.role === Role.ADMIN;
   }
 
   isLeader(): boolean {
+    if (!this.currentUser()) {
+      this.loadCurrentUser();
+    }
+
     return this.currentUser()?.role === Role.ORG_LEADER;
   }
 
@@ -263,6 +290,10 @@ export class AuthService {
             detail: resp.message,
           });
 
+          if (this.isLeader()) {
+            this.dataService.loadData();
+          }
+
           return of(true);
         }),
         catchError(() => of(false))
@@ -287,20 +318,48 @@ export class AuthService {
   }
 
   refreshToken(): Observable<string> {
-    const refreshToken = this.tokenService.getRefreshToken();
+    if (!this.refreshInFlight$) {
+      const refreshToken = this.tokenService.getRefreshToken();
 
-    return this.http
-      .post<TokenResponse>(`${this.serverUrl}/refresh`, { refreshToken })
-      .pipe(
-        switchMap((resp) => {
-          const authToken = resp.authToken as string;
-          const newRefreshToken = resp.refreshToken as string;
+      this.refreshInFlight$ = this.http
+        .post<TokenResponse>(`${this.serverUrl}/refresh`, { refreshToken })
+        .pipe(
+          switchMap((resp) => {
+            const authToken = resp.authToken as string;
+            const newRefreshToken = resp.refreshToken as string;
 
-          this.tokenService.saveTokens(authToken, newRefreshToken);
+            this.tokenService.saveTokens(authToken, newRefreshToken);
 
-          return of(authToken);
-        }),
-        catchError((err) => throwError(() => err))
-      );
+            return of(authToken);
+          }),
+          shareReplay(1),
+          catchError((err) => {
+            this.refreshInFlight$ = null;
+
+            return throwError(() => err);
+          }),
+          tap({
+            complete: () => {
+              this.refreshInFlight$ = null;
+            },
+          })
+        );
+    }
+
+    return this.refreshInFlight$;
+
+    // return this.http
+    //   .post<TokenResponse>(`${this.serverUrl}/refresh`, { refreshToken })
+    //   .pipe(
+    //     switchMap((resp) => {
+    //       const authToken = resp.authToken as string;
+    //       const newRefreshToken = resp.refreshToken as string;
+
+    //       this.tokenService.saveTokens(authToken, newRefreshToken);
+
+    //       return of(authToken);
+    //     }),
+    //     catchError((err) => throwError(() => err))
+    //   );
   }
 }

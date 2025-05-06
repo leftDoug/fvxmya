@@ -44,7 +44,7 @@
 <div class="flex flex-column">
   <p-table
     #tAgreements
-    [value]="agreements()"
+    [value]="general ? generalAgreements() : agreements()"
     [globalFilterFields]="['content', 'responsible', 'meeting', 'status']"
     [tableStyle]="{ 'min-width': '60rem' }"
     dataKey="id"

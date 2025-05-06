@@ -123,6 +123,10 @@ export class MeetingInfoComponent implements OnInit {
   constructor() {}
 
   ngOnInit(): void {
+    if (this.route.snapshot.parent?.routeConfig?.path?.includes('acuerdos')) {
+      this.infoVisible = false;
+      this.agreementsVisible = true;
+    }
     // const idMeeting = parseInt(this.route.snapshot.paramMap.get('id')!);
     this.meetingsService.getById(Number(this.idMeeting())).subscribe((meet) => {
       if (meet) {

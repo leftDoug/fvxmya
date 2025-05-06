@@ -5,6 +5,7 @@ import {
   inject,
 } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { AuthService } from '@app/auth/services/auth.service';
 import { Organization } from '@app/organizations/interfaces/organization.interface';
 import { ConfirmRemoveComponent } from '@app/shared/confirm-remove/confirm-remove.component';
 import { ButtonModule } from 'primeng/button';
@@ -37,11 +38,14 @@ import { OrganizationFormComponent } from '../organization-form/organization-for
 })
 export class OrganizationsTableComponent {
   private readonly organizationsService = inject(OrganizationsService);
+  private readonly authService = inject(AuthService);
 
   loading: boolean = true;
   // FIXME: setear esto para k se carguen solo a las k puede acceder el usuario y usar el loading para la tabla
   organizations = computed(() => {
-    return this.organizationsService.getAllFormatted();
+    return this.organizationsService
+      .getAllFormatted()
+      .filter((org) => org.leader?.id === this.authService.getCurrentUserId());
   });
   formDialogVisible: boolean = false;
   selectedOrg: Organization | null = null;
@@ -51,7 +55,7 @@ export class OrganizationsTableComponent {
   removeEntityEvent: Event | null = null;
 
   constructor() {
-    this.organizationsService.getAllFrom();
+    this.organizationsService.getAllFromLeader();
   }
 
   showRemoveConfirmation(event: Event, id: number, name: string) {
