@@ -93,7 +93,7 @@ export class OrganizationFormComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    console.log(this.workers());
+    // console.log(this.workers());
     if (this.organization()?.id) {
       if (this.route.snapshot.routeConfig?.path?.includes('info')) {
         this.workersSelected = [...this.organization()!.members!];
@@ -112,6 +112,10 @@ export class OrganizationFormComponent implements OnInit {
         idLeader: this.organization()!.leader!.id,
       });
     }
+
+    this.leader.setValue(this.authService.getCurrentUserId());
+    this.leader.disable();
+    console.log(this.leader.value);
   }
 
   get name(): AbstractControl {

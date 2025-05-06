@@ -84,8 +84,14 @@
             severity="danger"
             [text]="true"
             [rounded]="true"
+            (onClick)="
+              showRemoveConfirmation(
+                $event,
+                typeOfMeeting.id,
+                typeOfMeeting.name
+              )
+            "
           />
-          <!-- (onClick)="remove($event, typeOfMeeting.id)" -->
         </td>
       </tr>
     </ng-template>

@@ -1,5 +1,9 @@
 <div class="flex flex-column">
-  <p-card header="Organizaciones" class="p-1" [styleClass]="'h-auto'">
+  <p-card class="p-1" [styleClass]="'h-auto'">
+    <ng-template #header>
+      <h2 class="ml-3">Organizaciones</h2>
+    </ng-template>
+
     <ng-template pTemplate="content">
       <p-table
         #tOrganizations

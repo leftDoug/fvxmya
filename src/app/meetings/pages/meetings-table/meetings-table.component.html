@@ -29,7 +29,7 @@
   class="w-full"
   [value]="meetings()"
   [globalFilterFields]="['name', 'session', 'date']"
-  [tableStyle]="{ 'min-width': '75rem' }"
+  [tableStyle]="{ 'min-width': '60rem' }"
 >
   <ng-template pTemplate="caption">
     <div class="flex justify-content-between">
@@ -132,6 +132,7 @@
             [rounded]="true"
             severity="danger"
             [text]="true"
+            (onClick)="showRemoveConfirmation($event, meeting.id, meeting.name)"
           />
         </div>
       </td>
@@ -157,5 +158,12 @@
   [typeOfMeeting]="typeOfMeeting()"
   [meeting]="selectedMeeting"
   (onHide)="hideFormDialog()"
+/>
+} @if(confirmDialogVisible){
+<app-confirm-remove
+  [entityName]="removeEntityName!"
+  [entityType]="'Reunión'"
+  [event]="removeEntityEvent!"
+  (onConfirm)="remove($event)"
 />
 }

@@ -1,13 +1,20 @@
 @if (!loading) {
-<div class="flex flex-wrap align-items-center justify-content-center">
-  <div class="p-3 w-full">
-    <p-card
-      class="min-w-700"
-      [header]="'Organización: ' + typeOfMeeting.organization!.name"
-      [subheader]="'Tipo de Reunión: ' + typeOfMeeting.name"
-    >
-      <ng-template pTemplate="content">
-        <!-- <div class="my-3">
+<!-- <div class="flex flex-wrap align-items-center justify-content-center"> -->
+<div class="flex flex-column">
+  <p-card class="p-1">
+    <ng-template #header>
+      <h2 class="ml-3 mb-1">
+        Organización:
+        {{ typeOfMeeting.organization?.name }}
+      </h2>
+
+      <span class="ml-3 text-color-secondary text-lg font-medium">
+        Tipo de Reunión: {{ typeOfMeeting.name }}</span
+      >
+    </ng-template>
+
+    <ng-template pTemplate="content">
+      <!-- <div class="my-3">
           <p-toolbar>
             <ng-template pTemplate="start">
               <p-button
@@ -30,7 +37,7 @@
           </p-toolbar>
         </div> -->
 
-        <!-- <div class="flex flex-row justify-content-end gap-2">
+      <!-- <div class="flex flex-row justify-content-end gap-2">
           <p-button
             label="Atrás"
             icon="pi pi-arrow-left"
@@ -39,20 +46,20 @@
           />
         </div> -->
 
-        <!-- <p-divider /> -->
-        @if (meetingsVisible) {
-        <app-meetings-table [typeOfMeeting]="typeOfMeeting" />
-        }@else if (agendasVisible) {
-        <app-agendas-table [typeOfMeeting]="typeOfMeeting" />
-        } @else{
-        <p>
-          <span class="text-lg font-bold text-red-500">Cargando tabla...</span>
-        </p>
-        }
-      </ng-template>
-    </p-card>
-  </div>
+      <!-- <p-divider /> -->
+      @if (meetingsVisible) {
+      <app-meetings-table [typeOfMeeting]="typeOfMeeting" />
+      }@else if (agendasVisible) {
+      <app-agendas-table [typeOfMeeting]="typeOfMeeting" />
+      } @else{
+      <p>
+        <span class="text-lg font-bold text-red-500">Cargando tabla...</span>
+      </p>
+      }
+    </ng-template>
+  </p-card>
 </div>
+<!-- </div> -->
 }@else {
 <app-loading />
 }

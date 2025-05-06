@@ -71,13 +71,29 @@
               [rounded]="true"
               [text]="true"
               severity="danger"
+              (onClick)="showRemoveConfirmation($event, agenda.id, agenda.year)"
             />
           </div>
         </div>
       </div>
     </div>
   </ng-template>
+
+  <ng-template pTemplate="emptymessage">
+    <tr>
+      <td colspan="4">No se encontró ninguna Reunión</td>
+    </tr>
+  </ng-template>
 </p-dataView>
+
+@if(confirmDialogVisible){
+<app-confirm-remove
+  [entityName]="removeEntityName!"
+  [entityType]="'Agenda'"
+  [event]="removeEntityEvent!"
+  (onConfirm)="remove($event)"
+/>
+}
 
 <!-- <app-agenda-form
       *ngIf="createVisible"

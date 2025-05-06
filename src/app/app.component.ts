@@ -3,6 +3,7 @@ import {
   computed,
   effect,
   inject,
+  LOCALE_ID,
   OnInit,
   signal,
 } from '@angular/core';
@@ -39,6 +40,7 @@ import { SidemenuComponent } from './sidemenu/sidemenu.component';
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css',
+  providers: [{ provide: LOCALE_ID, useValue: 'es-ES' }],
 })
 export class AppComponent implements OnInit {
   title = 'fvxmya';

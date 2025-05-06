@@ -1,11 +1,35 @@
 @if (!loading) {
 <div class="flex flex-column">
-  <p-card
-    class="min-w-700 p-1"
-    [header]="organization ? organization.name : ''"
-  >
+  <p-card class="min-w-700 p-1">
+    <ng-template #header>
+      <h2 class="ml-3">Organización: {{ organization.name }}</h2>
+    </ng-template>
+
     <ng-template pTemplate="content">
-      <div class="flex flex-row justify-content-end gap-2">
+      <p-toolbar>
+        <ng-template #start>
+          <span></span>
+        </ng-template>
+        <ng-template pTemplate="end">
+          <p-button
+            label="Atrás"
+            icon="pi pi-arrow-left"
+            [text]="true"
+            routerLink="../../"
+            class="mr-2"
+          />
+
+          <p-button
+            label="Editar Organización"
+            severity="success"
+            icon="pi pi-pencil"
+            [text]="true"
+            (onClick)="showFormDialog()"
+          />
+        </ng-template>
+      </p-toolbar>
+
+      <!-- <div class="flex flex-row justify-content-end gap-2">
         <p-button
           label="Atrás"
           icon="pi pi-arrow-left"
@@ -19,7 +43,7 @@
           [text]="true"
           (onClick)="showFormDialog()"
         />
-      </div>
+      </div> -->
       <div class="">
         <p-divider align="left" type="solid">
           <strong>Líder</strong>

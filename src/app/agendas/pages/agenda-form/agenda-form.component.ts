@@ -65,6 +65,8 @@ export class AgendaFormComponent implements OnInit {
   private readonly notificatorService = inject(NotificatorService);
   private state = signal({ topics: new Map<number, Topic>() });
 
+  id = input.required<string>();
+
   topics = computed(() => Array.from(this.state().topics.values()));
   agendaForm: FormGroup;
   newAgenda?: Agenda;
@@ -82,8 +84,6 @@ export class AgendaFormComponent implements OnInit {
   removeEntityEvent: Event | null = null;
 
   counter: number = -1;
-
-  id = input.required<string>();
 
   constructor() {
     this.agendaForm = this.fb.group({

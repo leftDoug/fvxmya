@@ -122,19 +122,17 @@ export class OrganizationsService {
   }
 
   remove(id: number): void {
-    this.http
-      .delete<OrganizationResponse>(`${this.apiUrl}/remove/${id}`)
-      .subscribe({
-        next: (resp: OrganizationResponse) => {
-          this.notificatorService.notificate({
-            severity: 'info',
-            summary: 'INFO',
-            detail: resp.message,
-          });
+    this.http.delete<OrganizationResponse>(`${this.apiUrl}/${id}`).subscribe({
+      next: (resp: OrganizationResponse) => {
+        this.notificatorService.notificate({
+          severity: 'info',
+          summary: 'INFO',
+          detail: resp.message,
+        });
 
-          this.state().organizations.delete(id);
-          this.state.set({ organizations: this.state().organizations });
-        },
-      });
+        this.state().organizations.delete(id);
+        this.state.set({ organizations: this.state().organizations });
+      },
+    });
   }
 }

@@ -1,12 +1,18 @@
 @if (loading) {
 <app-loading />
 }@else {
-<div class="flex align-items-center justify-content-center">
-  <p-card
-    class="p-3 w-full"
-    [header]="'Organización: ' + typeOfMeeting?.organization?.name"
-    [subheader]="'Tipo de Reunión: ' + meeting()?.typeOfMeeting?.name || ''"
-  >
+<div class="flex flex-column">
+  <p-card class="p-1">
+    <ng-template #header>
+      <h2 class="ml-3 mb-1">
+        Organización:
+        {{ typeOfMeeting?.organization?.name }}
+      </h2>
+
+      <span class="ml-3 text-color-secondary text-lg font-medium">
+        Tipo de Reunión: {{ meeting()?.typeOfMeeting?.name }}</span
+      >
+    </ng-template>
     <ng-template #content>
       <div class="flex flex-row gap-2">
         <div class="flex flex-column">

@@ -189,6 +189,45 @@ export class AgreementsTableComponent implements OnInit {
     return amount;
   });
   completed = StatusMeeting.CLOSED;
+  generalFulfilled = computed(() => {
+    let amount = 0;
+    this.generalAgreements().forEach((a) => {
+      if (a.status.toLowerCase() === StatusAgreement.FULFILLED.toLowerCase()) {
+        amount++;
+      }
+    });
+    return amount;
+  });
+  generalUnfulfilled = computed(() => {
+    let amount = 0;
+    this.generalAgreements().forEach((a) => {
+      if (
+        a.status.toLowerCase() === StatusAgreement.UNFULFILLED.toLowerCase()
+      ) {
+        amount++;
+      }
+    });
+    return amount;
+  });
+  generalInProcess = computed(() => {
+    let amount = 0;
+    this.generalAgreements().forEach((a) => {
+      if (a.status.toLowerCase() === StatusAgreement.IN_PROCESS.toLowerCase()) {
+        amount++;
+      }
+    });
+    return amount;
+  });
+  generalCancelled = computed(() => {
+    let amount = 0;
+    this.generalAgreements().forEach((a) => {
+      if (a.status.toLowerCase() === StatusAgreement.CANCELLED.toLowerCase()) {
+        amount++;
+      }
+    });
+    return amount;
+  });
+  generalCompleted = StatusMeeting.CLOSED;
   // role!: string;
   // user!: UserLogged;
   // directorArea: boolean = false;

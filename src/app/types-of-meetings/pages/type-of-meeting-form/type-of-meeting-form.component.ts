@@ -54,7 +54,7 @@ export class TypeOfMeetingFormComponent implements OnInit {
       // this.tomsService.getById(this.idToM).subscribe((resp) => {
       //   if (resp.ok) {
       //     const typeOfmeeting: TypeOfMeeting = resp.arg as TypeOfMeeting;
-
+      this.newTom = this.typeOfMeeting()!;
       this.tomForm.patchValue({
         id: this.typeOfMeeting()!.id,
         name: this.typeOfMeeting()!.name,
@@ -83,15 +83,24 @@ export class TypeOfMeetingFormComponent implements OnInit {
     this.submitted = true;
 
     if (this.tomForm.valid) {
-      this.newTom = {
-        name: this.name.value.trim() as string,
-        idOrganization:
-          this.typeOfMeeting()?.idOrganization || this.idOrganization(),
-      };
-
       if (!this.typeOfMeeting()) {
+        this.newTom = {
+          name: this.name.value.trim() as string,
+          idOrganization:
+            this.typeOfMeeting()?.idOrganization || this.idOrganization(),
+        };
+
         this.tomsService
           .create(this.newTom)
+          .subscribe((ok) => ok && this.hideDialog());
+      } else {
+        this.newTom = {
+          id: this.typeOfMeeting()!.id,
+          name: this.name.value.trim() as string,
+          idOrganization: this.typeOfMeeting()!.organization!.id,
+        };
+        this.tomsService
+          .update(this.newTom)
           .subscribe((ok) => ok && this.hideDialog());
       }
 

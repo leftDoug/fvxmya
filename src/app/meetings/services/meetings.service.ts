@@ -1,4 +1,4 @@
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { inject, Injectable, signal } from '@angular/core';
 import { baseUrl } from '@app/environment/environment.development';
 import { NotificatorService } from '@app/services/notificator.service';
@@ -145,10 +145,18 @@ export class MeetingsService {
       );
   }
 
-  remove(meeting: Meeting): Observable<MeetingResponse> {
-    return this.http
-      .patch<MeetingResponse>(`${this.serverUrl}/${meeting.id}`, meeting)
-      .pipe(catchError((err: HttpErrorResponse) => of(err.error)));
+  remove(id: number): void {
+    this.http.delete<MeetingResponse>(`${this.serverUrl}/${id}`).subscribe({
+      next: (resp) => {
+        this.notificatorService.notificate({
+          severity: 'info',
+          summary: 'ELIMINADO',
+          detail: resp.message,
+        });
+        this.state().meetings.delete(id);
+        this.state.set({ meetings: this.state().meetings });
+      },
+    });
   }
 
   setAttendance(

@@ -29,7 +29,11 @@ export class ConfirmRemoveComponent implements OnInit {
   ngOnInit(): void {
     this._confirmationService.confirm({
       target: this.event().target as EventTarget,
-      message: `Está seguro de eliminar ${this.entityName()}?`,
+      message: `Está seguro de eliminar ${
+        this.entityType() === 'Agenda'
+          ? 'la agenda del año ' + new Date(this.entityName()).getFullYear()
+          : this.entityName()
+      }?`,
       header: `Eliminar ${this.entityType()}`,
       icon: 'pi pi-exclamation-triangle',
       rejectButtonProps: {

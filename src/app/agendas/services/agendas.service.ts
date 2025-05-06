@@ -52,7 +52,6 @@ export class AgendasService {
     idTom: number,
     year: number
   ): Observable<Agenda | undefined> {
-    console.log(this.getAllFormatted());
     const agenda = this.getAllFormatted().find(
       (a) => a.typeOfMeeting?.id === idTom && a.year === year
     );
@@ -136,17 +135,17 @@ export class AgendasService {
       );
   }
 
-  remove(id: number) {
-    return this.http
-      .delete<AgendaResponse>(`${this.serverUrl}/${id}`)
-      .subscribe({
-        next: (resp: AgendaResponse) => {
-          this.notificatorService.notificate({
-            severity: 'info',
-            summary: 'ELIMINADO',
-            detail: resp.message,
-          });
-        },
-      });
+  remove(id: number): void {
+    this.http.delete<AgendaResponse>(`${this.serverUrl}/${id}`).subscribe({
+      next: (resp: AgendaResponse) => {
+        this.state().agendas.delete(id);
+        this.state.set({ agendas: this.state().agendas });
+        this.notificatorService.notificate({
+          severity: 'info',
+          summary: 'ELIMINADO',
+          detail: resp.message,
+        });
+      },
+    });
   }
 }

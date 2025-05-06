@@ -215,11 +215,23 @@
     </ng-template>
     <ng-template #summary>
       <div class="flex justify-content-evenly pt-3">
-        <span class="font-bold">Acuerdos: {{ agreements().length }}</span>
-        <span class="font-bold">Cumplidos: {{ fulfilled() }}</span>
-        <span class="font-bold">Inumplidos: {{ unfulfilled() }}</span>
-        <span class="font-bold">Anulados: {{ cancelled() }}</span>
-        <span class="font-bold">En proceso: {{ inProcess() }}</span>
+        <span class="font-bold"
+          >Acuerdos:
+          {{ general ? generalAgreements().length : agreements().length }}</span
+        >
+        <span class="font-bold"
+          >Cumplidos: {{ general ? generalFulfilled() : fulfilled() }}</span
+        >
+        <span class="font-bold"
+          >Inumplidos:
+          {{ general ? generalUnfulfilled() : unfulfilled() }}</span
+        >
+        <span class="font-bold"
+          >Anulados: {{ general ? generalCancelled() : cancelled() }}</span
+        >
+        <span class="font-bold"
+          >En proceso: {{ general ? generalInProcess() : inProcess() }}</span
+        >
       </div>
     </ng-template>
   </p-table>

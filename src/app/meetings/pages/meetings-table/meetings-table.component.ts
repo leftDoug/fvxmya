@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Organization } from '@app/organizations/interfaces/organization.interface';
 import { OrganizationsService } from '@app/organizations/services/organizations.service';
+import { ConfirmRemoveComponent } from '@app/shared/confirm-remove/confirm-remove.component';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { IconFieldModule } from 'primeng/iconfield';
@@ -31,6 +32,7 @@ import { MeetingFormComponent } from '../meeting-form/meeting-form.component';
     FormsModule,
     InputTextModule,
     MeetingFormComponent,
+    ConfirmRemoveComponent,
   ],
   templateUrl: './meetings-table.component.html',
   styleUrls: ['./meetings-table.component.css'],
@@ -49,6 +51,12 @@ export class MeetingsTableComponent implements OnInit {
   });
   sessions: Session[] = [Session.ORDINARY, Session.EXTRAORDINARY];
   selectedMeeting?: Meeting;
+
+  confirmDialogVisible: boolean = false;
+  tableIsSorted: boolean | null = null;
+  removeEntityName: string | null = null;
+  removeEntityId: number | null = null;
+  removeEntityEvent: Event | null = null;
 
   formDialogVisible: boolean = false;
 
@@ -92,5 +100,22 @@ export class MeetingsTableComponent implements OnInit {
       'organizaciones/detalles',
       this.typeOfMeeting().organization!.id,
     ]);
+  }
+
+  showRemoveConfirmation(event: Event, id: number, name: string) {
+    this.removeEntityEvent = event;
+    this.removeEntityName = name;
+    this.removeEntityId = id;
+    this.confirmDialogVisible = true;
+  }
+
+  remove(ok: boolean) {
+    if (ok) {
+      this.meetingsService.remove(this.removeEntityId!);
+    }
+
+    this.removeEntityId = null;
+    this.removeEntityName = null;
+    this.confirmDialogVisible = false;
   }
 }

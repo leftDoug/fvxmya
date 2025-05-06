@@ -9,6 +9,7 @@ import { DividerModule } from 'primeng/divider';
 
 import { LoadingComponent } from '@app/shared/loading/loading.component';
 import { TypesOfMeetingsTableComponent } from '@app/types-of-meetings/pages/types-of-meetings-table/types-of-meetings-table.component';
+import { ToolbarModule } from 'primeng/toolbar';
 import { Organization } from '../../interfaces/organization.interface';
 import { OrganizationsService } from '../../services/organizations.service';
 import { OrganizationFormComponent } from '../organization-form/organization-form.component';
@@ -28,6 +29,7 @@ import { OrganizationFormComponent } from '../organization-form/organization-for
     ButtonModule,
     DividerModule,
     RouterLink,
+    ToolbarModule,
   ],
 })
 export class OrganizationInfoComponent implements OnInit {

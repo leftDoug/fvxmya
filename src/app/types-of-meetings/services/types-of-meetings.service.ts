@@ -134,7 +134,7 @@ export class TypesOfMeetingsService {
 
   remove(id: number): void {
     this.http
-      .delete<TypeOfMeetingResponse>(`${this.serverUrl}/remove/${id}`)
+      .delete<TypeOfMeetingResponse>(`${this.serverUrl}/${id}`)
       .subscribe({
         next: (resp: TypeOfMeetingResponse) => {
           this.notificatorService.notificate({
@@ -144,15 +144,6 @@ export class TypesOfMeetingsService {
           });
           this.state().typesOfMeetings.delete(id);
           this.state.set({ typesOfMeetings: this.state().typesOfMeetings });
-        },
-        error: (err: HttpErrorResponse) => {
-          console.error(err.error.message);
-          this.notificatorService.notificate({
-            severity: 'error',
-            summary: 'ERROR',
-            detail: err.error.message,
-          });
-          return of(false);
         },
       });
   }
@@ -225,6 +216,28 @@ export class TypesOfMeetingsService {
         return of(false);
       })
     );
+  }
+
+  update(tom: TypeOfMeeting): Observable<boolean> {
+    return this.http
+      .patch<TypeOfMeetingResponse>(`${this.serverUrl}/${tom.id}`, tom)
+      .pipe(
+        switchMap((resp) => {
+          const tom: TypeOfMeeting = resp.data as TypeOfMeeting;
+
+          this.state().typesOfMeetings.set(tom.id, tom);
+          this.state.set({ typesOfMeetings: this.state().typesOfMeetings });
+
+          this.notificatorService.notificate({
+            severity: 'success',
+            summary: 'ACTUALIZADO',
+            detail: resp.message,
+          });
+
+          return of(true);
+        }),
+        catchError(() => of(false))
+      );
   }
 
   // add(typeOfMeeting: TypeOfMeeting): Observable<ToMResponse> {
