@@ -39,6 +39,7 @@ import { AgreementFormComponent } from '../agreement-form/agreement-form.compone
 })
 export class AgreementInfoComponent implements OnInit {
   private readonly agreementsService = inject(AgreementsService);
+  private readonly authservice = inject(AuthService);
 
   id = input.required<string>();
 
@@ -61,8 +62,7 @@ export class AgreementInfoComponent implements OnInit {
   infoVisible: boolean = true;
   loading: boolean = true;
   visible: boolean = true;
-
-  isLeader: boolean = false;
+  isLeader = this.authservice.isLeader();
 
   onHide = output<void>();
 
@@ -70,8 +70,7 @@ export class AgreementInfoComponent implements OnInit {
 
   constructor(
     private fb: FormBuilder,
-    private meetingsService: MeetingsService,
-    private authService: AuthService
+    private meetingsService: MeetingsService
   ) {}
 
   ngOnInit(): void {

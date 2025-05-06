@@ -18,7 +18,6 @@ import {
   of,
   shareReplay,
   switchMap,
-  tap,
   throwError,
 } from 'rxjs';
 import { Role, UserInfo } from '../interfaces/user.interface';
@@ -182,6 +181,25 @@ export class AuthService {
   //   return this.userIsAuthenticated();
   // }
 
+  checkAuthStaus2(): Observable<boolean> {
+    if (!this.tokenService.hasTokens()) {
+      this.isAuthenticated.set(false);
+
+      return of(false);
+    }
+
+    if (this.tokenService.isAuthenticated()) {
+      this.isAuthenticated.set(true);
+
+      return of(true);
+    }
+
+    return this.refreshToken().pipe(
+      switchMap(() => of(true)),
+      catchError(() => of(false))
+    );
+  }
+
   checkAuthStaus(): Observable<boolean> {
     if (!this.tokenService.hasTokens()) {
       this.isAuthenticated.set(false);
@@ -327,8 +345,10 @@ export class AuthService {
           switchMap((resp) => {
             const authToken = resp.authToken as string;
             const newRefreshToken = resp.refreshToken as string;
+            this.refreshInFlight$ = null;
 
             this.tokenService.saveTokens(authToken, newRefreshToken);
+            this.isAuthenticated.set(true);
 
             return of(authToken);
           }),
@@ -337,12 +357,12 @@ export class AuthService {
             this.refreshInFlight$ = null;
 
             return throwError(() => err);
-          }),
-          tap({
-            complete: () => {
-              this.refreshInFlight$ = null;
-            },
           })
+          // tap({
+          //   complete: () => {
+          //     this.refreshInFlight$ = null;
+          //   },
+          // })
         );
     }
 

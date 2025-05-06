@@ -1,8 +1,6 @@
 <div class="p-1">
-  <p-card
-    [header]="general ? 'Todos los Acuerdos' : 'Acuerdos del Usuario'"
-    [subheader]="general ? '' : 'Usuario: ' + userUsername() || ''"
-  >
+  <p-card [header]="general ? 'Todos los Acuerdos' : 'Acuerdos del Usuario'">
+    <!-- [subheader]="general ? '' : 'Usuario: ' + userUsername() || ''" -->
     <ng-template #content>
       <app-agreements-table />
     </ng-template>

@@ -78,7 +78,8 @@
         (onClick)="hideDialog()"
       />
 
-      @if (!agreement().data!.completed && agreement().data!.state) {
+      @if (!agreement().data!.completed && agreement().data!.state) { @if
+      (isLeader) {
       <p-button
         severity="success"
         icon="pi pi-pencil"
@@ -88,6 +89,8 @@
         (onClick)="showFormDialog()"
       />
 
+      }
+
       <p-button
         icon="pi pi-file-edit"
         label="Dar respuesta"
@@ -96,7 +99,7 @@
         (onClick)="showResponseDialog()"
       />
 
-      @if(agreement().data!.responses!.length > 0){
+      @if (isLeader) { @if(agreement().data!.responses!.length > 0){
       <p-button
         icon="pi pi-check"
         label="Marcar como cumplido"
@@ -115,7 +118,8 @@
         (onClick)="setCancelled()"
         [text]="true"
       />
-      }
+
+      } }
     </div>
   </ng-template>
 

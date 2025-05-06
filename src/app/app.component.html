@@ -18,28 +18,26 @@
 
     <ng-template #end>
       <div class="flex items-center gap-2">
-        <p-button rounded="true" size="small">
+        <p-button
+          rounded="true"
+          size="small"
+          [text]="true"
+          (onClick)="op.toggle($event)"
+        >
           <p-avatar shape="circle" [label]="letter()" />
         </p-button>
+
+        <p-popover #op>
+          <p-menu [model]="itemsUser"></p-menu>
+        </p-popover>
       </div>
     </ng-template>
   </p-menubar>
 </div>
-}
 
-<!-- <div class="flex gap-2">
-  <p-card class="w-full">
-    <div class="flex">
-      <p-button
-        icon="pi pi-bars"
-        class="ml-2"
-        [text]="true"
-        (click)="panelVisible.set(true)"
-      />
-      <span class="flex text-lg font-bold align-self-center">FVX M&A</span>
-    </div>
-  </p-card>
-</div> -->
+@if (formRegisterVisible) {
+<app-register [pwdMode]="true" (onHide)="hideFormRegisterDialog()" />
+} }
 
 <p-toast />
 <router-outlet />

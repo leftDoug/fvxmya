@@ -216,6 +216,8 @@ export class AgreementsTableComponent implements OnInit {
       this.agreementsService.getAllFromMeeting(this.meeting()!.id);
       this.workers = this.meeting()!.participants as User[];
     }
+
+    this.agreementsService.getAllFromUser();
   }
 
   // get user() {

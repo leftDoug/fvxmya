@@ -3,15 +3,13 @@ import { Router, type CanActivateFn } from '@angular/router';
 import { AuthService } from '@app/auth/services/auth.service';
 import { NotificatorService } from '@app/services/notificator.service';
 import { map } from 'rxjs';
-import { TokenService } from '../services/token.service';
 
 export const leaderGuard: CanActivateFn = (route, state) => {
   const authService = inject(AuthService);
   const notificatorService = inject(NotificatorService);
   const router = inject(Router);
-  const tokenService = inject(TokenService);
 
-  return authService.checkAuthStaus().pipe(
+  return authService.checkAuthStaus2().pipe(
     map((authenticated) => {
       if (authenticated) {
         if (authService.isLeader()) {
@@ -29,25 +27,6 @@ export const leaderGuard: CanActivateFn = (route, state) => {
         return false;
       }
 
-      const refreshToken = tokenService.getRefreshToken();
-
-      if (refreshToken && !tokenService.isTokenExpired(refreshToken)) {
-        if (authService.isLeader()) {
-          return true;
-        } else {
-          notificatorService.notificate({
-            severity: 'error',
-            summary: 'ERROR',
-            detail:
-              'GUARD LEADER: No tiene permisos para acceder a esta página',
-          });
-
-          router.navigate(['acceso-denegado']);
-
-          return false;
-        }
-      }
-
       notificatorService.notificate({
         severity: 'error',
         summary: 'ERROR',
@@ -63,28 +42,52 @@ export const leaderGuard: CanActivateFn = (route, state) => {
 //   const authService = inject(AuthService);
 //   const notificatorService = inject(NotificatorService);
 //   const router = inject(Router);
+//   const tokenService = inject(TokenService);
 
-//   if (authService.isAuthenticated() && authService.isLeader()) {
-//     return true;
-//   }
+//   return authService.checkAuthStaus().pipe(
+//     map((authenticated) => {
+//       if (authenticated) {
+//         if (authService.isLeader()) {
+//           return true;
+//         }
 
-//   if (authService.isAuthenticated()) {
-//     notificatorService.notificate({
-//       severity: 'error',
-//       summary: 'ERROR',
-//       detail: 'No tiene permisos para acceder a esta página',
-//     });
+//         notificatorService.notificate({
+//           severity: 'error',
+//           summary: 'ERROR',
+//           detail: 'GUARD LEADER: No tiene permisos para acceder a esta página',
+//         });
 
-//     router.navigate(['acceso-denegado']);
-//   } else {
-//     notificatorService.notificate({
-//       severity: 'error',
-//       summary: 'ERROR',
-//       detail: 'Debe iniciar sesión para acceder a esta página',
-//     });
+//         router.navigate(['acceso-denegado']);
 
-//     router.navigate(['iniciar-sesion']);
-//   }
+//         return false;
+//       }
 
-//   return false;
+//       const refreshToken = tokenService.getRefreshToken();
+
+//       if (refreshToken && !tokenService.isTokenExpired(refreshToken)) {
+//         if (authService.isLeader()) {
+//           return true;
+//         } else {
+//           notificatorService.notificate({
+//             severity: 'error',
+//             summary: 'ERROR',
+//             detail:
+//               'GUARD LEADER: No tiene permisos para acceder a esta página',
+//           });
+
+//           router.navigate(['acceso-denegado']);
+
+//           return false;
+//         }
+//       }
+
+//       notificatorService.notificate({
+//         severity: 'error',
+//         summary: 'ERROR',
+//         detail: 'GUARD LEADER: Debe iniciar sesión para acceder a esta página',
+//       });
+
+//       return false;
+//     })
+//   );
 // };

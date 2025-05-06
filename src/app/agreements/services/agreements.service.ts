@@ -20,23 +20,20 @@ export class AgreementsService {
     return Array.from(this.state().agreements.values());
   }
 
-  getAllFromUser(): Observable<Agreement[]> {
-    return this.http.get<AgreementResponse>(this.serverUrl).pipe(
-      switchMap((resp) => {
-        const agr: Agreement[] = resp.data as Agreement[];
+  getAllFromUser(): void {
+    this.http.get<AgreementResponse>(this.serverUrl).subscribe({
+      next: (resp) => {
+        const agrs: Agreement[] = resp.data as Agreement[];
 
-        of(agr).subscribe((result) => {
-          result.forEach((a) => {
-            this.state().agreements.set(a.id, a);
+        of(agrs).subscribe((result) => {
+          result.forEach((agr) => {
+            this.state().agreements.set(agr.id, agr);
           });
 
           this.state.set({ agreements: this.state().agreements });
         });
-
-        return of(agr);
-      }),
-      catchError(() => of([]))
-    );
+      },
+    });
   }
 
   getAllFromLeader(): void {
