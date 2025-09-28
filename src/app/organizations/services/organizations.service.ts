@@ -44,6 +44,22 @@ export class OrganizationsService {
   //   });
   // }
 
+  getAll(): void {
+    this.http.get<OrganizationResponse>(this.apiUrl).subscribe({
+      next: (resp: OrganizationResponse) => {
+        const organizations = resp.data as Organization[];
+
+        of(organizations).subscribe((result) => {
+          result.forEach((org) => {
+            this.state().organizations.set(org.id, org);
+          });
+
+          this.state.set({ organizations: this.state().organizations });
+        });
+      },
+    });
+  }
+
   getAllFromLeader(): void {
     this.http.get<OrganizationResponse>(`${this.apiUrl}/leader`).subscribe({
       next: (resp: OrganizationResponse) => {

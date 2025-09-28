@@ -7,8 +7,7 @@ import {
   output,
   Signal,
 } from '@angular/core';
-import { FormBuilder } from '@angular/forms';
-import { Agreement, AgreementState } from '@app/agreements/interfaces';
+import { AgreementState } from '@app/agreements/interfaces';
 import { ResponseFormComponent } from '@app/responses/components/response-form/response-form.component';
 import { LoadingComponent } from '@app/shared/loading/loading.component';
 import { getSeverity, getStatus } from '@app/shared/severity-status';
@@ -17,7 +16,6 @@ import { DialogModule } from 'primeng/dialog';
 import { DividerModule } from 'primeng/divider';
 import { TagModule } from 'primeng/tag';
 import { AuthService } from 'src/app/auth/services/auth.service';
-import { MeetingsService } from 'src/app/meetings/services/meetings.service';
 import { AgreementsService } from '../../services/agreements.service';
 import { AgreementFormComponent } from '../agreement-form/agreement-form.component';
 
@@ -43,20 +41,6 @@ export class AgreementInfoComponent implements OnInit {
 
   id = input.required<string>();
 
-  // responses: Response[] = [];
-
-  // agreement: Agreement = {
-  //   id: '',
-  //   content: '',
-  //   compilanceDate: new Date(),
-  //   state: true,
-  // };
-  // createdBy: string = '';
-  // meeting: string = '';
-  // responsible: string = '';
-
-  agreement!: Signal<AgreementState>;
-
   formDialogVisible: boolean = false;
   responseDialogVisible: boolean = false;
   infoVisible: boolean = true;
@@ -65,50 +49,13 @@ export class AgreementInfoComponent implements OnInit {
   isLeader = this.authservice.isLeader();
 
   onHide = output<void>();
+  agreement!: Signal<AgreementState>;
 
-  // TODO: poner un delay para k no se vea el estado inicial al abrir la pagina
-
-  constructor(
-    private fb: FormBuilder,
-    private meetingsService: MeetingsService
-  ) {}
+  constructor() {}
 
   ngOnInit(): void {
     this.agreement = this.agreementsService.getById(this.id());
-    // this.activatedRoute.params
-    //   .pipe(
-    //     tap(({ id }) => {
-    //       this.agreementsService
-    //         .getResponses(id)
-    //         .subscribe((resp) => (this.responses = resp.arg as Response[]));
-    //     }),
-    //     switchMap(({ id }) => this.agreementsService.getInfo(id)),
-    //     switchMap((resp2) => {
-    //       this.agreement = resp2.arg as Agreement;
-    //       return this.meetingsService.getOrganization(
-    //         this.agreement.meeting!.id
-    //       );
-    //     })
-    //   )
-    //   .subscribe((resp3) => {
-    //     this.authService.getIdUser().subscribe((resp4) => {
-    //       this.isLeader = (resp3.arg as Organization).idLeader === resp4;
-    //       this.loading = false;
-    //     });
-    //   });
   }
-
-  // get severity(): string {
-  //   return getSeverity(this.agreement, null);
-  // }
-
-  // setSeverity(status: Status) {
-  //   return getSeverity(null, status);
-  // }
-
-  // get status(): Status {
-  //   return getStatus(this.agreement);
-  // }
 
   showFormDialog() {
     this.infoVisible = false;
@@ -128,21 +75,6 @@ export class AgreementInfoComponent implements OnInit {
   hideResponseDialog() {
     this.responseDialogVisible = false;
     this.infoVisible = true;
-  }
-
-  reloadInfo(agr: Agreement) {
-    // if (event) {
-    //   this.activatedRoute.params
-    //     .pipe(
-    //       tap(({ id }) => {
-    //         this.agreementsService
-    //           .getResponses(id)
-    //           .subscribe((resp) => (this.responses = resp.arg as Response[]));
-    //       }),
-    //       switchMap(({ id }) => this.agreementsService.getInfo(id))
-    //     )
-    //     .subscribe((resp) => (this.agreement = resp.arg as Agreement));
-    // }
   }
 
   setCompleted() {

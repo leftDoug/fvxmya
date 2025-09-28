@@ -40,6 +40,26 @@ export class ValidatorService {
     };
   }
 
+  checkDate(d: string) {
+    return (formGroup: AbstractControl): ValidationErrors | null => {
+      const date: Date = new Date(formGroup.get(d)!.value);
+
+      if (Date.now() > date.getTime()) {
+        if (!formGroup.get(d)!.errors) {
+          formGroup.get(d)!.setErrors({ dateError: true });
+        }
+
+        return {
+          dateError: true,
+        };
+      } else {
+        formGroup.get(d)!.setErrors(this.timeLimits(formGroup.get(d)!.value));
+      }
+
+      return null;
+    };
+  }
+
   compareMeetingAndCompilance(meetDate: Date, agrDate: string) {
     return (formGroup: AbstractControl): ValidationErrors | null => {
       // const meeting: Date = new Date(formGroup.get(m)?.value);

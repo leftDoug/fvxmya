@@ -113,9 +113,9 @@ export class OrganizationFormComponent implements OnInit {
       });
     }
 
-    this.leader.setValue(this.authService.getCurrentUserId());
-    this.leader.disable();
-    console.log(this.leader.value);
+    // this.leader.setValue(this.authService.getCurrentUserId());
+    // this.leader.disable();
+    // console.log(this.leader.value);
   }
 
   get name(): AbstractControl {

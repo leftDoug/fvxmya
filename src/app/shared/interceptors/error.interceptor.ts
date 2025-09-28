@@ -4,6 +4,7 @@ import {
   HttpRequest,
 } from '@angular/common/http';
 import { inject } from '@angular/core';
+import { Router } from '@angular/router';
 import { AuthService } from '@app/auth/services/auth.service';
 import { NotificatorService } from '@app/services/notificator.service';
 import { BehaviorSubject, catchError, switchMap, throwError } from 'rxjs';
@@ -12,6 +13,7 @@ import { TokenService } from '../services/token.service';
 export const errorInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(AuthService);
   const notificatorService = inject(NotificatorService);
+  const router = inject(Router);
   const tokenService = inject(TokenService);
   const refreshSubject: BehaviorSubject<any> = new BehaviorSubject<any>(null);
   let refreshInProgress = false;
@@ -70,6 +72,10 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
 
       if (err instanceof HttpErrorResponse) {
         notificateError(err.error.message, notificatorService);
+      }
+
+      if (err instanceof HttpErrorResponse && err.status === 403) {
+        router.navigate(['acceso-denegado']);
       }
 
       return throwError(() => err);

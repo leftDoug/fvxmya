@@ -4,6 +4,7 @@ import { adminGuard } from './shared/guards/admin.guard';
 import { authGuard } from './shared/guards/auth.guard';
 import { leaderGuard } from './shared/guards/leader.guard';
 import { loginGuard } from './shared/guards/login.guard';
+import { organizationGuard } from './shared/guards/organization.guard';
 
 export const routes: Routes = [
   {
@@ -12,7 +13,7 @@ export const routes: Routes = [
       {
         path: '',
         title: 'Organizaciones',
-        canActivate: [authGuard, leaderGuard],
+        canActivate: [authGuard, organizationGuard],
         loadComponent: () =>
           import(
             './organizations/pages/organizations-table/organizations-table.component'

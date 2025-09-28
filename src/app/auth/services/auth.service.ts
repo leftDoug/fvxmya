@@ -331,6 +331,7 @@ export class AuthService {
       .subscribe(() => {
         this.tokenService.removeTokens();
         this.currentUser.set(null);
+        console.log(this.currentUser());
         this.router.navigate(['iniciar-sesion']);
       });
   }

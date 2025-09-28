@@ -19,7 +19,7 @@ export const adminGuard: CanActivateFn = (route, state) => {
         notificatorService.notificate({
           severity: 'error',
           summary: 'ERROR',
-          detail: 'GUARD ADMIN: No tiene permisos para acceder a esta página',
+          detail: 'No tiene permisos para acceder a esta página',
         });
 
         router.navigate(['acceso-denegado']);
@@ -30,7 +30,7 @@ export const adminGuard: CanActivateFn = (route, state) => {
       notificatorService.notificate({
         severity: 'error',
         summary: 'ERROR',
-        detail: 'GUARD ADMIN: Debe iniciar sesión para acceder a esta página',
+        detail: 'Debe iniciar sesión para acceder a esta página',
       });
 
       return false;

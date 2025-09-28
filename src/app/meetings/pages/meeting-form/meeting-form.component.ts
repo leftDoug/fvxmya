@@ -102,6 +102,7 @@ export class MeetingFormComponent implements OnInit {
       {
         validators: [
           this.validatorService.compareBeginningAndEnd('startTime', 'endTime'),
+          this.validatorService.checkDate('date'),
         ],
       }
     );

@@ -18,7 +18,7 @@ export const authGuard: CanActivateFn = (route, state) => {
       notificatorService.notificate({
         severity: 'error',
         summary: 'ERROR',
-        detail: 'GUARD: Debe iniciar sesión para acceder a esta página',
+        detail: 'Debe iniciar sesión para acceder a esta página',
       });
 
       router.navigate(['iniciar-sesion']);

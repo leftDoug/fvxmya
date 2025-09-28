@@ -129,12 +129,7 @@
 <app-response-form
   [agreement]="agreement().data!"
   (onHide)="hideResponseDialog()"
-  (onUpdate)="reloadInfo($event)"
 />
 }@else if (formDialogVisible) {
-<app-agreement-form
-  [agreement]="agreement().data!"
-  (onUpdate)="reloadInfo($event)"
-  (onHide)="hideForm()"
-/>
+<app-agreement-form [agreement]="agreement().data!" (onHide)="hideForm()" />
 }

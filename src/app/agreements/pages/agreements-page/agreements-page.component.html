@@ -1,6 +1,10 @@
-<div class="p-1">
-  <p-card [header]="general ? 'Todos los Acuerdos' : 'Acuerdos del Usuario'">
-    <!-- [subheader]="general ? '' : 'Usuario: ' + userUsername() || ''" -->
+<div class="flex flex-column">
+  <p-card class="p-1">
+    <ng-template #header>
+      <h2 class="ml-3">
+        {{ general ? "Todos los Acuerdos" : "Acuerdos del Usuario" }}
+      </h2>
+    </ng-template>
     <ng-template #content>
       <app-agreements-table />
     </ng-template>

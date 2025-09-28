@@ -93,7 +93,7 @@ export class SidemenuComponent implements OnInit {
     const leadOrgItems: MenuItem[] = [
       {
         label: 'Organizaciones',
-        icon: 'pi pi-chart-bar',
+        icon: 'pi pi-sitemap',
         command: () => {
           this.changeVisible(false);
           this.router.navigate(['organizaciones']);
@@ -103,7 +103,7 @@ export class SidemenuComponent implements OnInit {
     const leadMeetItems: MenuItem[] = [
       {
         label: 'Reuniones',
-        icon: 'pi pi-chart-bar',
+        icon: 'pi pi-briefcase',
         items: this.organizations().map((organization) => ({
           label: organization.name,
           items: this.toms().map((tom) => ({
@@ -119,7 +119,7 @@ export class SidemenuComponent implements OnInit {
     const leadAgeItems: MenuItem[] = [
       {
         label: 'Agendas',
-        icon: 'pi pi-chart-bar',
+        icon: 'pi pi-calendar-clock',
         items: this.organizations().map((organization) => ({
           label: organization.name,
           items: this.toms().map((tom) => ({
@@ -135,7 +135,7 @@ export class SidemenuComponent implements OnInit {
     let leadAgrItems: MenuItem[] = [
       {
         label: 'Acuerdos',
-        icon: 'pi pi-chart-bar',
+        icon: 'pi pi-file',
         items: this.organizations().map((organization) => ({
           label: organization.name,
           items: this.toms().map((tom) => ({
@@ -154,11 +154,11 @@ export class SidemenuComponent implements OnInit {
     const profileItems: MenuItem[] = [
       {
         label: 'Perfil',
-        icon: 'pi pi-home',
+        icon: 'pi pi-user',
         items: [
           {
             label: 'Cambiar contraseña',
-            icon: 'pi pi-chart-bar',
+            icon: 'pi pi-key',
             command: () => {
               this.changeVisible(false);
               this.showFormRegisterDialog();
@@ -166,7 +166,7 @@ export class SidemenuComponent implements OnInit {
           },
           {
             label: 'Cerrar sesión',
-            icon: 'pi pi-chart-bar',
+            icon: 'pi pi-sign-out',
             command: () => {
               this.changeVisible(false);
               this.authService.logout();
@@ -180,12 +180,13 @@ export class SidemenuComponent implements OnInit {
       items = [
         {
           label: 'Usuarios',
-          icon: 'pi pi-chart-bar',
+          icon: 'pi pi-users',
           command: () => {
             this.changeVisible(false);
             this.router.navigate(['usuarios']);
           },
         },
+        ...leadOrgItems,
       ];
     }
 
@@ -197,7 +198,7 @@ export class SidemenuComponent implements OnInit {
         ...leadAgeItems,
         {
           label: 'Todos los Acuerdos',
-          icon: 'pi pi-chart-bar',
+          icon: 'pi pi-list',
           command: () => {
             this.changeVisible(false);
             this.router.navigate(['acuerdos/general']);
@@ -211,7 +212,7 @@ export class SidemenuComponent implements OnInit {
       ...items,
       {
         label: 'Acuerdos del Usuario',
-        icon: 'pi pi-chart-bar',
+        icon: 'pi pi-list',
         command: () => {
           this.changeVisible(false);
           this.router.navigate(['acuerdos']);

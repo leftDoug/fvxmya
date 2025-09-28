@@ -93,7 +93,7 @@ export class AppComponent implements OnInit {
         items: [
           {
             label: 'Cambiar contraseña',
-            icon: 'pi pi-cog',
+            icon: 'pi pi-key',
             command: () => this.showFormRegisterDialog(),
           },
           {
